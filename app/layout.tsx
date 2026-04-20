@@ -3,7 +3,9 @@ import { SessionProvider } from "next-auth/react";
 import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { isAllowed } from "@/lib/allowlist";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -29,7 +31,11 @@ export const metadata: Metadata = {
   description: "Internal dashboard for progsu (GSU)",
 };
 
-const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized"];
+// Paths that skip auth enforcement. /api/auth/* is defensive — API route
+// handlers don't render this layout, so the NextAuth handlers are already
+// unreachable from this code path, but listing it keeps the intent explicit
+// if a future refactor wires this check into something that does see APIs.
+const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized", "/api/auth"];
 
 const themeBootstrap = `
 try {
@@ -48,6 +54,14 @@ export default async function RootLayout({
   const session = await auth();
   const pathname = headers().get("x-pathname") ?? "/";
   const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+
+  if (!isPublic) {
+    if (!session?.user?.email) redirect("/sign-in");
+    if (!isAllowed(session.user.email, process.env.ALLOWED_EMAILS)) {
+      redirect("/unauthorized");
+    }
+  }
+
   const showHeader = Boolean(session?.user) && !isPublic;
 
   const themeCookie = cookies().get("progbase-theme")?.value;
