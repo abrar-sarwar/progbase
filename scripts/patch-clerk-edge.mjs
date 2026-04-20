@@ -1,77 +1,88 @@
 #!/usr/bin/env node
 /**
- * Adds `edge-light` / `workerd` / `worker` / `browser` conditions to
- * @clerk/nextjs's `#safe-node-apis` internal subpath import in both the
- * esm and cjs dist/package.jsons. Without this, Vercel's Edge Function
- * validator resolves the `node` condition and flags `node:fs` as an
- * unsupported module, breaking deploys.
+ * Rewrites Clerk's internal subpath imports so that Vercel's Edge Function
+ * validator can't reach any `node:*` modules through them.
  *
- * Runs as a prebuild step so it's guaranteed to execute on Vercel
- * (unlike postinstall, which can silently skip). Idempotent — if the
- * conditions are already in place it does nothing and exits cleanly.
+ * Even when Clerk declares `edge-light`/`worker`/`browser` conditions
+ * upstream (e.g. @clerk/backend's `#crypto`), Vercel's validator still
+ * flags the subpath because the `node` condition points at a file
+ * containing `node:fs`/`node:crypto`/etc. The fix is to rewrite every
+ * condition — including `node` — to the browser-safe variant. At runtime
+ * Node 18+ has Web Crypto globally and the browser #safe-node-apis
+ * variant is already a no-op stub, so rewriting `node` is safe for the
+ * server side too.
  *
- * Can be removed once @clerk/nextjs upstreams these conditions.
+ * Runs as a prebuild step so it's guaranteed to execute on Vercel.
+ * Idempotent: skips packages already patched.
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const TARGETS = [
-  "node_modules/@clerk/nextjs/dist/esm/package.json",
-  "node_modules/@clerk/nextjs/dist/cjs/package.json",
+  {
+    file: "node_modules/@clerk/nextjs/dist/esm/package.json",
+    importKey: "#safe-node-apis",
+  },
+  {
+    file: "node_modules/@clerk/nextjs/dist/cjs/package.json",
+    importKey: "#safe-node-apis",
+  },
+  {
+    file: "node_modules/@clerk/backend/package.json",
+    importKey: "#crypto",
+  },
 ];
 
-const NEW_CONDITIONS = ["edge-light", "workerd", "worker", "browser"];
+const CONDITIONS = ["edge-light", "workerd", "worker", "browser", "node"];
 
-let changed = 0;
-let missing = 0;
+let patchedCount = 0;
+let missingCount = 0;
 
-for (const relPath of TARGETS) {
-  const path = resolve(process.cwd(), relPath);
+for (const { file, importKey } of TARGETS) {
+  const path = resolve(process.cwd(), file);
   if (!existsSync(path)) {
-    missing++;
-    console.warn(`[patch-clerk-edge] not found: ${relPath}`);
+    missingCount++;
+    console.warn(`[patch-clerk-edge] not found: ${file}`);
     continue;
   }
 
   const raw = readFileSync(path, "utf-8");
   const json = JSON.parse(raw);
-  const imp = json?.imports?.["#safe-node-apis"];
+  const imp = json?.imports?.[importKey];
   if (!imp || typeof imp !== "object") {
     console.warn(
-      `[patch-clerk-edge] #safe-node-apis not found in ${relPath}; skipping`,
+      `[patch-clerk-edge] ${importKey} not found in ${file}; skipping`,
     );
     continue;
   }
 
-  const defaultPath = imp.default;
-  if (!defaultPath) {
+  const safePath = imp.default ?? imp["edge-light"] ?? imp.browser;
+  if (typeof safePath !== "string") {
     console.warn(
-      `[patch-clerk-edge] no default path in #safe-node-apis for ${relPath}; skipping`,
+      `[patch-clerk-edge] no scalar browser-safe path in ${importKey} for ${file}; skipping`,
     );
     continue;
   }
 
-  const already = NEW_CONDITIONS.every((c) => imp[c] === defaultPath);
-  if (already) {
-    console.log(`[patch-clerk-edge] already patched: ${relPath}`);
+  const already = CONDITIONS.every((c) => imp[c] === safePath);
+  if (already && imp.default === safePath) {
+    console.log(`[patch-clerk-edge] already patched: ${file} ${importKey}`);
     continue;
   }
 
-  // Build a new imports object with the new conditions prepended,
-  // preserving existing node/default keys.
   const patched = {};
-  for (const c of NEW_CONDITIONS) patched[c] = defaultPath;
-  for (const key of Object.keys(imp)) patched[key] = imp[key];
+  for (const c of CONDITIONS) patched[c] = safePath;
+  patched.default = safePath;
 
-  json.imports["#safe-node-apis"] = patched;
+  json.imports[importKey] = patched;
   writeFileSync(path, JSON.stringify(json, null, 2) + "\n", "utf-8");
-  console.log(`[patch-clerk-edge] patched: ${relPath}`);
-  changed++;
+  console.log(`[patch-clerk-edge] patched: ${file} ${importKey}`);
+  patchedCount++;
 }
 
-if (missing === TARGETS.length) {
+if (missingCount === TARGETS.length) {
   console.log(
-    "[patch-clerk-edge] all targets missing — @clerk/nextjs not installed yet; skipping",
+    "[patch-clerk-edge] all targets missing — Clerk not installed yet; skipping",
   );
 }
 
