@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import type { Member } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
+import { isEboard } from "@/lib/eboard";
 import { blockMember } from "@/app/_actions/members";
 
 type SortKey =
@@ -158,7 +160,10 @@ export function MembersTable({ members }: { members: Member[] }) {
                 className="border-b border-zinc-100 transition-colors hover:bg-zinc-50/60"
               >
                 <td className="h-10 px-3 text-zinc-900">
-                  {m.name ?? <span className="text-zinc-300">—</span>}
+                  <span className="inline-flex items-center gap-2">
+                    {m.name ?? <span className="text-zinc-300">—</span>}
+                    {isEboard(m.name) && <Chip tone="indigo">E-board</Chip>}
+                  </span>
                 </td>
                 <td className="h-10 px-3 text-zinc-700">
                   {m.email ?? <span className="text-zinc-300">—</span>}

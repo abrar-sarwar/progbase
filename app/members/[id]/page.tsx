@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getMember } from "@/lib/members";
 import { MemberEditForm } from "@/components/member-edit-form";
 import { formatDate } from "@/lib/format";
+import { isEboard } from "@/lib/eboard";
+import { Chip } from "@/components/ui/chip";
 
 export default async function MemberEditPage({
   params,
@@ -17,9 +19,12 @@ export default async function MemberEditPage({
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
           Member · editable
         </span>
-        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
-          {member.name ?? member.email ?? member.user_api_id}
-        </h1>
+        <div className="mt-1 flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
+            {member.name ?? member.email ?? member.user_api_id}
+          </h1>
+          {isEboard(member.name) && <Chip tone="indigo">E-board</Chip>}
+        </div>
         <p className="mt-1 font-mono text-xs text-zinc-500">
           {member.email ?? "—"}
         </p>
