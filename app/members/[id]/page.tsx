@@ -9,11 +9,10 @@ import { Chip } from "@/components/ui/chip";
 export default async function MemberEditPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
   const [member, eboardRows] = await Promise.all([
-    getMember(decodeURIComponent(id)),
+    getMember(decodeURIComponent(params.id)),
     listEboardEntries(),
   ]);
   if (!member) notFound();

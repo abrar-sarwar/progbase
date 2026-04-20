@@ -20,7 +20,7 @@ const NAV = [
 export async function Header({ currentPath }: { currentPath: string }) {
   const last = await getLastImport();
   const dismissed =
-    (await cookies()).get("progbase_stale_dismissed")?.value === "1";
+    cookies().get("progbase_stale_dismissed")?.value === "1";
   const stale = isStale(last?.uploaded_at ?? null);
   const days = staleDays(last?.uploaded_at ?? null);
   const showStale = stale && !dismissed;
