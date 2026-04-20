@@ -53,6 +53,7 @@ export function ThemeToggle({ className }: { className?: string }) {
         Math.max(cy, window.innerHeight - cy),
       );
 
+      root.classList.add("vt-running");
       const transition = doc.startViewTransition(() => applyTheme(next));
 
       transition.ready.then(() => {
@@ -61,11 +62,15 @@ export function ThemeToggle({ className }: { className?: string }) {
         root.animate(
           { clipPath: [clipFrom, clipTo] },
           {
-            duration: 480,
+            duration: 340,
             easing: "cubic-bezier(0.4, 0, 0.2, 1)",
             pseudoElement: "::view-transition-new(root)",
           },
         );
+      });
+
+      transition.finished.finally(() => {
+        root.classList.remove("vt-running");
       });
       return;
     }

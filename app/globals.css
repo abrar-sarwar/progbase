@@ -27,11 +27,21 @@
   .theme-transitioning *::before,
   .theme-transitioning *::after {
     transition:
-      background-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
-      border-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
-      color 240ms cubic-bezier(0.4, 0, 0.2, 1),
-      fill 240ms cubic-bezier(0.4, 0, 0.2, 1),
-      stroke 240ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+      background-color 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      fill 220ms cubic-bezier(0.4, 0, 0.2, 1),
+      stroke 220ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* While the View Transition is running, freeze every other element
+     transition so we don't get a second wave of transition-colors
+     cross-fades fighting the browser's unified snapshot animation. */
+  html.vt-running *,
+  html.vt-running *::before,
+  html.vt-running *::after {
+    transition: none !important;
+    animation-play-state: paused !important;
   }
 
   /* View Transitions API — modern browsers (Chrome/Edge 111+, Safari 18+).
