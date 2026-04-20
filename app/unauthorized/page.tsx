@@ -10,10 +10,10 @@ export default function UnauthorizedPage() {
         <Image
           src={logo}
           alt=""
-          width={48}
-          height={48}
+          width={56}
+          height={56}
           priority
-          className="h-12 w-12 opacity-40 grayscale"
+          className="h-14 w-14 rounded-xl object-cover opacity-40 ring-1 ring-black/10 grayscale dark:ring-white/10"
         />
         <span className="mt-6 text-[11px] uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
           403 · not on list

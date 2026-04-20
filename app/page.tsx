@@ -18,10 +18,10 @@ export default async function MembersPage() {
           <Image
             src={logo}
             alt=""
-            width={28}
-            height={28}
+            width={32}
+            height={32}
             priority
-            className="h-7 w-7 opacity-90"
+            className="h-8 w-8 rounded-md object-cover ring-1 ring-zinc-200/80 dark:ring-zinc-700/80"
           />
           <span className="text-[11px] uppercase tracking-[0.22em] text-violet-600 dark:text-violet-400">
             step one

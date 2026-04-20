@@ -36,10 +36,10 @@ export async function Header({ currentPath }: { currentPath: string }) {
           <Image
             src={logo}
             alt=""
-            width={24}
-            height={24}
+            width={28}
+            height={28}
             priority
-            className="h-6 w-6 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-[10deg] group-hover:scale-110"
+            className="h-7 w-7 shrink-0 rounded-md ring-1 ring-zinc-200/80 object-cover transition-transform duration-500 ease-out group-hover:scale-[1.08] dark:ring-zinc-700/80"
           />
           <span className="font-display text-[19px] font-semibold italic leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
             progbase

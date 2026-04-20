@@ -14,10 +14,10 @@ export default function SignInPage() {
         <Image
           src={logo}
           alt=""
-          width={56}
-          height={56}
+          width={72}
+          height={72}
           priority
-          className="h-14 w-14 drop-shadow-sm"
+          className="h-16 w-16 rounded-xl ring-1 ring-black/10 object-cover shadow-lg shadow-violet-500/15 dark:ring-white/10 dark:shadow-violet-400/10"
         />
         <span className="font-display text-2xl font-semibold italic tracking-tight-2 text-zinc-900 dark:text-zinc-50">
           progbase
