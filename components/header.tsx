@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { cn } from "@/lib/cn";
 import { Chip } from "@/components/ui/chip";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PresenceStack } from "@/components/presence-stack";
 import { getLastImport, isStale, staleDays } from "@/lib/freshness";
 import logo from "../public/progbase.png";
 
@@ -88,6 +89,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
               </button>
             </form>
           )}
+          <PresenceStack />
           <ThemeToggle />
           <UserButton
             appearance={{

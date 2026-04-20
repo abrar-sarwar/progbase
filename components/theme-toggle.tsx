@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -12,37 +12,79 @@ function persist(theme: "dark" | "light") {
   document.cookie = `progbase-theme=${theme}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
 }
 
+type ViewTransitionDoc = Document & {
+  startViewTransition?: (cb: () => void | Promise<void>) => {
+    ready: Promise<void>;
+    finished: Promise<void>;
+  };
+};
+
 export function ThemeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = useState<boolean | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
+  function applyTheme(next: boolean) {
+    const root = document.documentElement;
+    if (next) root.classList.add("dark");
+    else root.classList.remove("dark");
+    persist(next ? "dark" : "light");
+    setIsDark(next);
+  }
+
   function toggle() {
     const root = document.documentElement;
     const next = !root.classList.contains("dark");
+    const doc = document as ViewTransitionDoc;
 
-    // Enable the one-shot transition, then flip the class in the next frame
-    // so the transition has a starting state to animate from. Remove the
-    // transition flag after it completes so hover/focus aren't affected.
+    // Prefer the View Transitions API with a circle reveal from the toggle.
+    if (
+      typeof doc.startViewTransition === "function" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      const rect = btnRef.current?.getBoundingClientRect();
+      const cx = rect ? rect.left + rect.width / 2 : window.innerWidth - 60;
+      const cy = rect ? rect.top + rect.height / 2 : 28;
+      const endRadius = Math.hypot(
+        Math.max(cx, window.innerWidth - cx),
+        Math.max(cy, window.innerHeight - cy),
+      );
+
+      const transition = doc.startViewTransition(() => applyTheme(next));
+
+      transition.ready.then(() => {
+        const clipFrom = `circle(0px at ${cx}px ${cy}px)`;
+        const clipTo = `circle(${endRadius}px at ${cx}px ${cy}px)`;
+        root.animate(
+          { clipPath: [clipFrom, clipTo] },
+          {
+            duration: 480,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+            pseudoElement: "::view-transition-new(root)",
+          },
+        );
+      });
+      return;
+    }
+
+    // Fallback: scoped class-based cross-fade for Firefox / older browsers.
     root.classList.add("theme-transitioning");
     requestAnimationFrame(() => {
-      if (next) root.classList.add("dark");
-      else root.classList.remove("dark");
-      persist(next ? "dark" : "light");
+      applyTheme(next);
       window.setTimeout(() => {
         root.classList.remove("theme-transitioning");
-      }, 260);
+      }, 280);
     });
-
-    setIsDark(next);
   }
 
   const showSun = isDark === true;
 
   return (
     <button
+      ref={btnRef}
       type="button"
       onClick={toggle}
       aria-label={showSun ? "Switch to light mode" : "Switch to dark mode"}

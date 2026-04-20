@@ -20,21 +20,32 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  /* One-shot cross-fade on theme toggle. The theme-transitioning class is
-     added by ThemeToggle for ~250ms, applying a single unified transition
-     to every element's bg/border/color so the page changes in lockstep
-     instead of the body fading while cards snap. Scoped to a flag class
-     so hover/focus don't get surprise transitions. */
+  /* Fallback cross-fade for browsers without the View Transitions API.
+     Scoped to a one-shot flag so hover/focus don't get surprise animations. */
   .theme-transitioning,
   .theme-transitioning *,
   .theme-transitioning *::before,
   .theme-transitioning *::after {
     transition:
-      background-color 220ms ease,
-      border-color 220ms ease,
-      color 220ms ease,
-      fill 220ms ease,
-      stroke 220ms ease !important;
+      background-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      fill 240ms cubic-bezier(0.4, 0, 0.2, 1),
+      stroke 240ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* View Transitions API — modern browsers (Chrome/Edge 111+, Safari 18+).
+     Disable the default cross-fade so the JS circle-reveal takes over. */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+  ::view-transition-old(root) {
+    z-index: 1;
+  }
+  ::view-transition-new(root) {
+    z-index: 2;
   }
   body {
     font-family: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
