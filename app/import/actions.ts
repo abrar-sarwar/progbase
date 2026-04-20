@@ -87,24 +87,23 @@ export async function importCsv(formData: FormData): Promise<ImportResult> {
     });
   }
 
-  const emailsLower = parsed.rows
-    .map((r) => (r.email ?? "").trim().toLowerCase())
-    .filter((e) => e.length > 0);
-  const uniqueEmails = Array.from(new Set(emailsLower));
+  // Blacklist: the table is small (handful of banned emails) so fetch it
+  // entirely and build a local Set. Avoids URL-length errors that happen
+  // when we pass hundreds of emails through .in() in a GET query string.
   const blockedSet = new Set<string>();
-  if (uniqueEmails.length > 0) {
+  {
     const { data: blRows, error: blErr } = await supabaseServer
       .from("blacklist")
-      .select("email")
-      .in("email", uniqueEmails);
+      .select("email");
     if (blErr) {
+      console.error("[importCsv] blacklist select failed:", blErr);
       return emptyResult({
         ok: false,
         message: `Blacklist check failed: ${blErr.message}`,
       });
     }
     for (const r of blRows ?? [])
-      blockedSet.add((r.email as string).toLowerCase());
+      blockedSet.add((r.email as string).trim().toLowerCase());
   }
 
   const toUpsert: typeof parsed.rows = [];
@@ -122,19 +121,27 @@ export async function importCsv(formData: FormData): Promise<ImportResult> {
   let updatedCount = 0;
   if (toUpsert.length > 0) {
     const ids = toUpsert.map((r) => r.user_api_id);
-    const { data: existingRows, error: selErr } = await supabaseServer
-      .from("members")
-      .select("user_api_id")
-      .in("user_api_id", ids);
-    if (selErr) {
-      return emptyResult({
-        ok: false,
-        message: `Existing-row check failed: ${selErr.message}`,
-      });
+
+    // Chunk the existing-ids check to keep each GET query string under the
+    // PostgREST URL-length limit (empirically safe at 200/chunk).
+    const CHUNK = 200;
+    const existingIds = new Set<string>();
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const chunk = ids.slice(i, i + CHUNK);
+      const { data: existingRows, error: selErr } = await supabaseServer
+        .from("members")
+        .select("user_api_id")
+        .in("user_api_id", chunk);
+      if (selErr) {
+        console.error("[importCsv] existing-row select failed:", selErr);
+        return emptyResult({
+          ok: false,
+          message: `Existing-row check failed: ${selErr.message}`,
+        });
+      }
+      for (const r of existingRows ?? [])
+        existingIds.add(r.user_api_id as string);
     }
-    const existingIds = new Set(
-      (existingRows ?? []).map((r) => r.user_api_id as string),
-    );
     for (const r of toUpsert) {
       if (existingIds.has(r.user_api_id)) updatedCount++;
       else newCount++;
@@ -144,6 +151,7 @@ export async function importCsv(formData: FormData): Promise<ImportResult> {
       .from("members")
       .upsert(toUpsert, { onConflict: "user_api_id" });
     if (upsertErr) {
+      console.error("[importCsv] upsert failed:", upsertErr);
       return emptyResult({
         ok: false,
         message: `Upsert failed: ${upsertErr.message}`,

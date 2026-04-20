@@ -20,7 +20,13 @@ export async function addBlacklist(input: {
   name?: string;
   reason: string;
 }): Promise<void> {
-  const editor = await requireEditorEmail();
+  let editor: string;
+  try {
+    editor = await requireEditorEmail();
+  } catch (e) {
+    console.error("[addBlacklist] auth failed:", e);
+    throw e;
+  }
   const email = input.email.trim().toLowerCase();
   const reason = input.reason.trim();
   if (!email) throw new Error("Email required");
@@ -35,13 +41,19 @@ export async function addBlacklist(input: {
     },
     { onConflict: "email" },
   );
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[addBlacklist] upsert failed:", error);
+    throw new Error(`Add to blacklist failed: ${error.message}`);
+  }
 
   const { data: matching, error: selErr } = await supabaseServer
     .from("members")
     .select("user_api_id, hidden")
     .ilike("email", email);
-  if (selErr) throw new Error(selErr.message);
+  if (selErr) {
+    console.error("[addBlacklist] matching-members select failed:", selErr);
+    throw new Error(`Member lookup failed: ${selErr.message}`);
+  }
 
   const toHide = (matching ?? []).filter((m) => !m.hidden);
   if (toHide.length > 0) {
@@ -54,7 +66,10 @@ export async function addBlacklist(input: {
         updated_by: editor,
       })
       .in("user_api_id", ids);
-    if (hideErr) throw new Error(hideErr.message);
+    if (hideErr) {
+      console.error("[addBlacklist] hide failed:", hideErr);
+      throw new Error(`Hide members failed: ${hideErr.message}`);
+    }
 
     const { error: logErr } = await supabaseServer.from("member_edits").insert(
       ids.map((id) => ({
@@ -65,7 +80,10 @@ export async function addBlacklist(input: {
         new_value: "true",
       })),
     );
-    if (logErr) throw new Error(logErr.message);
+    if (logErr) {
+      console.error("[addBlacklist] audit log failed:", logErr);
+      throw new Error(`Audit log failed: ${logErr.message}`);
+    }
   }
 
   revalidatePath("/blacklist");
