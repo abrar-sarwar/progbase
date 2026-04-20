@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function persist(theme: "dark" | "light") {
+  try {
+    localStorage.setItem("progbase-theme", theme);
+  } catch {}
+  document.cookie = `progbase-theme=${theme}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
+}
+
 export function ThemeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = useState<boolean | null>(null);
 
@@ -14,16 +23,14 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next = !document.documentElement.classList.contains("dark");
     if (next) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("progbase-theme", "dark");
+      persist("dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("progbase-theme", "light");
+      persist("light");
     }
     setIsDark(next);
   }
 
-  // Render a stable placeholder until we know the real state — avoids
-  // a flash of the wrong icon on hydration.
   const showSun = isDark === true;
 
   return (
@@ -37,7 +44,6 @@ export function ThemeToggle({ className }: { className?: string }) {
         className,
       )}
     >
-      {/* Sun icon */}
       <svg
         aria-hidden
         viewBox="0 0 20 20"
@@ -54,7 +60,6 @@ export function ThemeToggle({ className }: { className?: string }) {
         <circle cx="10" cy="10" r="3.2" />
         <path d="M10 1.5v2M10 16.5v2M3.5 10h-2M18.5 10h-2M4.7 4.7 3.3 3.3M16.7 16.7l-1.4-1.4M4.7 15.3l-1.4 1.4M16.7 3.3l-1.4 1.4" />
       </svg>
-      {/* Moon icon */}
       <svg
         aria-hidden
         viewBox="0 0 20 20"

@@ -3,7 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/header";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -31,13 +31,14 @@ export const metadata: Metadata = {
 
 const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized"];
 
-// Set theme class before paint to avoid a white flash on first render.
+// Fallback for first-visit users whose cookie isn't set yet — honors
+// prefers-color-scheme before React hydrates.
 const themeBootstrap = `
 try {
-  var stored = localStorage.getItem('progbase-theme');
-  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var dark = stored === 'dark' || (stored !== 'light' && prefersDark);
-  if (dark) document.documentElement.classList.add('dark');
+  if (!document.cookie.match(/(?:^|; )progbase-theme=/)) {
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) document.documentElement.classList.add('dark');
+  }
 } catch (e) {}
 `;
 
@@ -51,10 +52,13 @@ export default async function RootLayout({
   const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
   const showHeader = Boolean(userId) && !isPublic;
 
+  const themeCookie = cookies().get("progbase-theme")?.value;
+  const isDark = themeCookie === "dark";
+
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${sans.variable} ${mono.variable}`}
+      className={`${fraunces.variable} ${sans.variable} ${mono.variable}${isDark ? " dark" : ""}`}
       suppressHydrationWarning
     >
       <head>
