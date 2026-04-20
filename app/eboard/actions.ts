@@ -42,9 +42,16 @@ export async function addEboardEntry(input: {
 
   if (error) {
     console.error("[addEboardEntry] insert failed:", error);
-    if (error.code === "42P01") {
+    const msg = (error.message ?? "").toLowerCase();
+    if (
+      error.code === "42P01" ||
+      error.code === "PGRST205" ||
+      msg.includes("does not exist") ||
+      msg.includes("could not find the table") ||
+      msg.includes("schema cache")
+    ) {
       throw new Error(
-        "The eboard_entries table doesn't exist yet. Run the migration SQL from README first.",
+        "The eboard_entries table doesn't exist yet. Run the migration SQL in Supabase before adding entries.",
       );
     }
     if (error.code === "23505") {

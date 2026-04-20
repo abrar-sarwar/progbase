@@ -26,8 +26,26 @@ export async function listEboardEntries(): Promise<EboardRow[]> {
     .order("added_at", { ascending: true });
 
   if (error) {
-    // 42P01 = relation does not exist; fall back to seed.
-    if (error.code === "42P01" || error.message?.includes("does not exist")) {
+    // Table doesn't exist yet (migration SQL hasn't been run). Fall back
+    // to the hardcoded seed so the app keeps working. Supabase can return
+    // this error in several shapes depending on PostgREST version:
+    //   - Postgres code "42P01" (undefined_table)
+    //   - PostgREST code "PGRST205" (schema cache miss)
+    //   - Message variants: "does not exist", "Could not find the table",
+    //     "schema cache"
+    const code = error.code ?? "";
+    const msg = (error.message ?? "").toLowerCase();
+    const isMissingTable =
+      code === "42P01" ||
+      code === "PGRST205" ||
+      msg.includes("does not exist") ||
+      msg.includes("could not find the table") ||
+      msg.includes("schema cache");
+
+    if (isMissingTable) {
+      console.warn(
+        "[eboard-db] eboard_entries table not found — using EBOARD_SEED fallback.",
+      );
       return EBOARD_SEED.map((e, i) => ({
         id: `seed-${i}`,
         label: e.label,
