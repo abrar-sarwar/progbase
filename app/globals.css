@@ -19,7 +19,22 @@
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    transition: background-color 200ms ease, color 200ms ease;
+  }
+  /* One-shot cross-fade on theme toggle. The theme-transitioning class is
+     added by ThemeToggle for ~250ms, applying a single unified transition
+     to every element's bg/border/color so the page changes in lockstep
+     instead of the body fading while cards snap. Scoped to a flag class
+     so hover/focus don't get surprise transitions. */
+  .theme-transitioning,
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition:
+      background-color 220ms ease,
+      border-color 220ms ease,
+      color 220ms ease,
+      fill 220ms ease,
+      stroke 220ms ease !important;
   }
   body {
     font-family: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;

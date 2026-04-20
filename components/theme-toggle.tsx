@@ -20,14 +20,22 @@ export function ThemeToggle({ className }: { className?: string }) {
   }, []);
 
   function toggle() {
-    const next = !document.documentElement.classList.contains("dark");
-    if (next) {
-      document.documentElement.classList.add("dark");
-      persist("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      persist("light");
-    }
+    const root = document.documentElement;
+    const next = !root.classList.contains("dark");
+
+    // Enable the one-shot transition, then flip the class in the next frame
+    // so the transition has a starting state to animate from. Remove the
+    // transition flag after it completes so hover/focus aren't affected.
+    root.classList.add("theme-transitioning");
+    requestAnimationFrame(() => {
+      if (next) root.classList.add("dark");
+      else root.classList.remove("dark");
+      persist(next ? "dark" : "light");
+      window.setTimeout(() => {
+        root.classList.remove("theme-transitioning");
+      }, 260);
+    });
+
     setIsDark(next);
   }
 
