@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/patch-clerk-edge.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package || node scripts/patch-clerk-edge.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.2",
