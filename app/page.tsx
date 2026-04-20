@@ -1,10 +1,12 @@
 import { listVisibleMembers } from "@/lib/members";
 import { MembersTable } from "@/components/members-table";
+import { isEboard } from "@/lib/eboard";
 import Link from "next/link";
 
 export default async function MembersPage() {
-  const members = await listVisibleMembers();
-  const empty = members.length === 0;
+  const all = await listVisibleMembers();
+  const members = all.filter((m) => !isEboard(m.name));
+  const empty = all.length === 0;
 
   if (empty) {
     return (

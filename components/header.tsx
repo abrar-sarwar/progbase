@@ -7,6 +7,7 @@ import { getLastImport, isStale, staleDays } from "@/lib/freshness";
 
 const NAV = [
   { href: "/", label: "Members" },
+  { href: "/eboard", label: "E-board" },
   { href: "/analytics", label: "Analytics" },
   { href: "/import", label: "Import" },
   { href: "/blacklist", label: "Blacklist" },

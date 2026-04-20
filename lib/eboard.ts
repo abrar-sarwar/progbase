@@ -32,22 +32,35 @@ export const EBOARD_NAMES: readonly string[] = [
   "abrar sarwar",
 ];
 
+function wordsOf(s: string): Set<string> {
+  return new Set(s.trim().toLowerCase().split(/\s+/).filter(Boolean));
+}
+
+function partsOf(entry: string): string[] {
+  return entry.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+export function matchesEntry(
+  name: string | null | undefined,
+  entry: string,
+): boolean {
+  if (!name) return false;
+  const words = wordsOf(name);
+  if (words.size === 0) return false;
+  const parts = partsOf(entry);
+  if (parts.length === 0) return false;
+  return parts.every((p) => words.has(p));
+}
+
 export function isEboard(name: string | null | undefined): boolean {
   if (!name) return false;
-  const words = new Set(
-    name
-      .trim()
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean),
-  );
-  if (words.size === 0) return false;
-  return EBOARD_NAMES.some((entry) => {
-    const parts = entry
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
-    if (parts.length === 0) return false;
-    return parts.every((p) => words.has(p));
-  });
+  return EBOARD_NAMES.some((entry) => matchesEntry(name, entry));
+}
+
+export function missingFromRoster(
+  memberNames: (string | null)[],
+): string[] {
+  return EBOARD_NAMES.filter(
+    (entry) => !memberNames.some((n) => matchesEntry(n, entry)),
+  ).map((e) => e);
 }

@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import type { Member } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Chip } from "@/components/ui/chip";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
-import { isEboard } from "@/lib/eboard";
 import { blockMember } from "@/app/_actions/members";
 
 type SortKey =
@@ -35,7 +33,19 @@ const COLUMNS: { key: SortKey; label: string; align?: "right" }[] = [
   { key: "event_checked_in_count", label: "Checked In", align: "right" },
 ];
 
-export function MembersTable({ members }: { members: Member[] }) {
+export function MembersTable({
+  members,
+  title = "Members",
+  eyebrow = "Roster",
+  unitSingular = "person",
+  unitPlural = "people",
+}: {
+  members: Member[];
+  title?: string;
+  eyebrow?: string;
+  unitSingular?: string;
+  unitPlural?: string;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
@@ -98,15 +108,15 @@ export function MembersTable({ members }: { members: Member[] }) {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
-            Roster
+            {eyebrow}
           </span>
           <div className="mt-1 flex items-baseline gap-3">
             <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
-              Members
+              {title}
             </h1>
             <span className="font-mono text-xs tabular-nums text-zinc-500">
               {filtered.length.toLocaleString()}{" "}
-              {filtered.length === 1 ? "person" : "people"}
+              {filtered.length === 1 ? unitSingular : unitPlural}
             </span>
           </div>
         </div>
@@ -160,10 +170,7 @@ export function MembersTable({ members }: { members: Member[] }) {
                 className="border-b border-zinc-100 transition-colors hover:bg-zinc-50/60"
               >
                 <td className="h-10 px-3 text-zinc-900">
-                  <span className="inline-flex items-center gap-2">
-                    {m.name ?? <span className="text-zinc-300">—</span>}
-                    {isEboard(m.name) && <Chip tone="indigo">E-board</Chip>}
-                  </span>
+                  {m.name ?? <span className="text-zinc-300">—</span>}
                 </td>
                 <td className="h-10 px-3 text-zinc-700">
                   {m.email ?? <span className="text-zinc-300">—</span>}
