@@ -1,11 +1,8 @@
-import NextAuth from "next-auth";
-import { NextResponse } from "next/server";
-import authConfig from "./auth.config";
+import { NextResponse, type NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { isAllowed } from "./lib/allowlist";
 
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const res = NextResponse.next();
   res.headers.set("x-pathname", nextUrl.pathname);
@@ -19,7 +16,17 @@ export default auth((req) => {
     return res;
   }
 
-  const email = req.auth?.user?.email;
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    salt:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
+    secureCookie: process.env.NODE_ENV === "production",
+  });
+  const email = token?.email as string | undefined;
+
   if (!email) {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
@@ -27,7 +34,7 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/unauthorized", req.url));
   }
   return res;
-});
+}
 
 export const config = {
   matcher: [
