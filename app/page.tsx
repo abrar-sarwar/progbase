@@ -1,13 +1,18 @@
 import { listVisibleMembers } from "@/lib/members";
 import { MembersTable } from "@/components/members-table";
 import { isEboard } from "@/lib/eboard";
+import { listEboardEntries, toEntry } from "@/lib/eboard-db";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../public/progbase.png";
 
 export default async function MembersPage() {
-  const all = await listVisibleMembers();
-  const members = all.filter((m) => !isEboard(m));
+  const [all, eboardRows] = await Promise.all([
+    listVisibleMembers(),
+    listEboardEntries(),
+  ]);
+  const eboardEntries = eboardRows.map(toEntry);
+  const members = all.filter((m) => !isEboard(m, eboardEntries));
   const empty = all.length === 0;
 
   if (empty) {

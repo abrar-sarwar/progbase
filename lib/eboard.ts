@@ -1,6 +1,14 @@
 /**
  * E-BOARD ROSTER — for auto-flagging members who are on the progsu e-board.
  *
+ * Entries live in the Supabase `eboard_entries` table and can be edited
+ * in-app by any allowlisted VP via /eboard.
+ *
+ * The array below is the seed used when the DB table hasn't been created
+ * yet, so the app stays functional before the migration SQL is run. After
+ * the migration, this constant is only referenced by lib/eboard-db.ts's
+ * fallback path.
+ *
  * Match strategy per entry:
  *   - `email`: exact (case-insensitive, trimmed) match against member.email.
  *     Use this for common first names ("jamal", "jared") where name-only
@@ -11,20 +19,18 @@
  *
  * An entry may have name, email, or both. If both are present, a match on
  * either one flags the member.
- *
- * Update this list as the e-board changes and commit.
  */
 
 export type EboardEntry = {
   /** Display label used in the "not yet in roster" list. */
   label: string;
   /** Optional email for exact-email matching. */
-  email?: string;
+  email?: string | null;
   /** Optional name for word-match against member.name. */
-  name?: string;
+  name?: string | null;
 };
 
-export const EBOARD: readonly EboardEntry[] = [
+export const EBOARD_SEED: readonly EboardEntry[] = [
   { label: "Joey Zhang", name: "joey zhang" },
   { label: "Charan", name: "charan" },
   { label: "Jared Beresford", email: "jaredberesford@gmail.com" },
@@ -83,15 +89,19 @@ export function matchesEntry(
   return false;
 }
 
-export function isEboard(member: MemberLike): boolean {
+export function isEboard(
+  member: MemberLike,
+  entries: readonly EboardEntry[],
+): boolean {
   if (!member.name && !member.email) return false;
-  return EBOARD.some((e) => matchesEntry(member, e));
+  return entries.some((e) => matchesEntry(member, e));
 }
 
-export function missingFromRoster(
+export function missingFromRoster<T extends EboardEntry>(
   members: MemberLike[],
-): EboardEntry[] {
-  return EBOARD.filter(
+  entries: readonly T[],
+): T[] {
+  return entries.filter(
     (entry) => !members.some((m) => matchesEntry(m, entry)),
   );
 }

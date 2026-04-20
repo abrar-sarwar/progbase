@@ -3,6 +3,7 @@ import { getMember } from "@/lib/members";
 import { MemberEditForm } from "@/components/member-edit-form";
 import { formatDate } from "@/lib/format";
 import { isEboard } from "@/lib/eboard";
+import { listEboardEntries, toEntry } from "@/lib/eboard-db";
 import { Chip } from "@/components/ui/chip";
 
 export default async function MemberEditPage({
@@ -10,8 +11,12 @@ export default async function MemberEditPage({
 }: {
   params: { id: string };
 }) {
-  const member = await getMember(decodeURIComponent(params.id));
+  const [member, eboardRows] = await Promise.all([
+    getMember(decodeURIComponent(params.id)),
+    listEboardEntries(),
+  ]);
   if (!member) notFound();
+  const eboardEntries = eboardRows.map(toEntry);
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 py-8">
@@ -23,7 +28,9 @@ export default async function MemberEditPage({
           <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
             {member.name ?? member.email ?? member.user_api_id}
           </h1>
-          {isEboard(member) && <Chip tone="violet">E-board</Chip>}
+          {isEboard(member, eboardEntries) && (
+            <Chip tone="violet">E-board</Chip>
+          )}
         </div>
         <p className="mt-1 font-mono text-xs text-zinc-500 dark:text-zinc-400">
           {member.email ?? "—"}
