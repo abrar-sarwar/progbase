@@ -5,5 +5,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [],
+  matcher: ["/_never_matches_disabled_middleware"],
 };
