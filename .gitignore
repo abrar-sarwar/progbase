@@ -1,5 +1,9 @@
 *.csv
-.env.local
+.env
+.env.*
+!.env.local.example
+!.env.example
 node_modules
 .next
 .vercel
+.claude/
