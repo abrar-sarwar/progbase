@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { isAllowed } from "@/lib/allowlist";
+import { isAllowed } from "./lib/allowlist";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Google],
