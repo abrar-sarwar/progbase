@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { Header } from "@/components/header";
+import { headers } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,11 +10,18 @@ export const metadata: Metadata = {
   description: "Internal dashboard for progsu (GSU)",
 };
 
-export default function RootLayout({
+const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized"];
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
+  const pathname = headers().get("x-pathname") ?? "/";
+  const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+  const showHeader = Boolean(userId) && !isPublic;
+
   return (
     <ClerkProvider
       signInUrl="/sign-in"
@@ -32,7 +42,10 @@ export default function RootLayout({
       }}
     >
       <html lang="en" className="bg-white text-zinc-900 antialiased">
-        <body className="min-h-screen">{children}</body>
+        <body className="min-h-screen">
+          {showHeader && <Header currentPath={pathname} />}
+          {children}
+        </body>
       </html>
     </ClerkProvider>
   );
