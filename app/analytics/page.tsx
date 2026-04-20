@@ -25,7 +25,7 @@ export default async function AnalyticsPage() {
 
   return (
     <main className="mx-auto max-w-[1400px] px-6 py-8">
-      <div className="mb-8 animate-fade-up">
+      <div className="mb-8">
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
           Dashboard
         </span>
@@ -41,7 +41,7 @@ export default async function AnalyticsPage() {
           Blocked members excluded from all counts.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 animate-fade-up">
+      <div className="grid gap-4 md:grid-cols-2">
         <Section
           title="Member growth"
           subtitle="Cumulative, by month of first Luma event"

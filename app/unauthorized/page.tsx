@@ -6,7 +6,7 @@ export default function UnauthorizedPage() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-zinc-50 px-4 text-center dark:bg-zinc-950">
       <div className="grain pointer-events-none absolute inset-0" />
-      <div className="relative z-10 flex flex-col items-center animate-fade-up">
+      <div className="relative z-10 flex flex-col items-center">
         <Image
           src={logo}
           alt=""

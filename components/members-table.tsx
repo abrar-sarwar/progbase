@@ -105,7 +105,7 @@ export function MembersTable({
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 animate-fade-up">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
             {eyebrow}

@@ -26,7 +26,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
   const showStale = stale && !dismissed;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/90">
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex h-14 items-center justify-between gap-6 px-6">
         <Link
           href="/"

@@ -10,7 +10,7 @@ export default function SignInPage() {
         aria-hidden
         className="pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-violet-300/40 blur-3xl dark:bg-violet-600/20"
       />
-      <div className="relative z-10 mb-8 flex flex-col items-center gap-3 animate-fade-up">
+      <div className="relative z-10 mb-8 flex flex-col items-center gap-3">
         <Image
           src={logo}
           alt=""
@@ -26,7 +26,7 @@ export default function SignInPage() {
           progsu · internal
         </span>
       </div>
-      <div className="relative z-10 animate-fade-up">
+      <div className="relative z-10">
         <SignIn
           appearance={{
             elements: {
@@ -46,7 +46,7 @@ export default function SignInPage() {
           }}
         />
       </div>
-      <p className="relative z-10 mt-6 max-w-xs text-center text-xs text-zinc-500 animate-fade-up dark:text-zinc-400">
+      <p className="relative z-10 mt-6 max-w-xs text-center text-xs text-zinc-500 dark:text-zinc-400">
         Google account only. If you&apos;re on the e-board allowlist, you land
         on the dashboard. Otherwise, you&apos;ll see a polite decline.
       </p>

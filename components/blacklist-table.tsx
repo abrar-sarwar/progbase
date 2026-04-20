@@ -89,7 +89,7 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-fade-up">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
             Moderation

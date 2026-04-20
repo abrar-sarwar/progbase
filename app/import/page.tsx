@@ -10,7 +10,7 @@ export default async function ImportPage() {
 
   return (
     <main className="mx-auto max-w-xl px-6 py-8">
-      <div className="mb-8 animate-fade-up">
+      <div className="mb-8">
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
           Data pipeline
         </span>
@@ -23,7 +23,7 @@ export default async function ImportPage() {
         </p>
       </div>
 
-      <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5 animate-fade-up dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
           Last import
         </h2>

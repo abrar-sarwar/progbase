@@ -20,7 +20,7 @@ export default async function EboardPage() {
           unitPlural="members"
         />
       ) : (
-        <div className="mb-8 animate-fade-up">
+        <div className="mb-8">
           <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
             Leadership
           </span>
@@ -34,7 +34,7 @@ export default async function EboardPage() {
         </div>
       )}
 
-      <section className="mt-10 animate-fade-up">
+      <section className="mt-10">
         <div className="mb-3 flex items-baseline justify-between">
           <div>
             <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
