@@ -23,7 +23,7 @@ export default async function MemberEditPage({
           <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
             {member.name ?? member.email ?? member.user_api_id}
           </h1>
-          {isEboard(member.name) && <Chip tone="indigo">E-board</Chip>}
+          {isEboard(member) && <Chip tone="indigo">E-board</Chip>}
         </div>
         <p className="mt-1 font-mono text-xs text-zinc-500">
           {member.email ?? "—"}

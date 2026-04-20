@@ -1,18 +1,11 @@
 import { listVisibleMembers } from "@/lib/members";
 import { MembersTable } from "@/components/members-table";
-import { isEboard, missingFromRoster, EBOARD_NAMES } from "@/lib/eboard";
-
-function titleCase(s: string): string {
-  return s
-    .split(/\s+/)
-    .map((w) => (w.length ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(" ");
-}
+import { isEboard, missingFromRoster, EBOARD } from "@/lib/eboard";
 
 export default async function EboardPage() {
   const all = await listVisibleMembers();
-  const eboardMembers = all.filter((m) => isEboard(m.name));
-  const missing = missingFromRoster(all.map((m) => m.name));
+  const eboardMembers = all.filter((m) => isEboard(m));
+  const missing = missingFromRoster(all);
 
   const hasMembers = eboardMembers.length > 0;
 
@@ -54,7 +47,7 @@ export default async function EboardPage() {
             </h2>
           </div>
           <span className="font-mono text-xs tabular-nums text-zinc-500">
-            {EBOARD_NAMES.length} total on list
+            {EBOARD.length} total on list
           </span>
         </div>
         {missing.length === 0 ? (
@@ -64,21 +57,27 @@ export default async function EboardPage() {
         ) : (
           <div className="rounded-lg border border-zinc-200 bg-white p-5">
             <p className="mb-3 text-xs text-zinc-500">
-              These names are on the e-board list in{" "}
+              These e-board entries in{" "}
               <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[11px]">
                 lib/eboard.ts
               </code>{" "}
-              but have no matching member in the roster. Either they
-              haven&apos;t attended a Luma event yet, or their Luma name
-              differs from the one on the list.
+              have no matching member. Either they haven&apos;t attended a
+              Luma event yet, or their email/name on the list doesn&apos;t
+              match what Luma has stored.
             </p>
             <ul className="flex flex-wrap gap-1.5">
-              {missing.map((m) => (
+              {missing.map((entry) => (
                 <li
-                  key={m}
-                  className="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700"
+                  key={entry.label}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700"
+                  title={entry.email ?? entry.name ?? entry.label}
                 >
-                  {titleCase(m)}
+                  <span>{entry.label}</span>
+                  {entry.email && (
+                    <span className="font-mono text-[10px] text-zinc-400">
+                      {entry.email}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

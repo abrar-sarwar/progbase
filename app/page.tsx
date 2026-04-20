@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default async function MembersPage() {
   const all = await listVisibleMembers();
-  const members = all.filter((m) => !isEboard(m.name));
+  const members = all.filter((m) => !isEboard(m));
   const empty = all.length === 0;
 
   if (empty) {
