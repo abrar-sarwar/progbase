@@ -24,14 +24,23 @@ export default async function AnalyticsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1400px] px-6 py-6">
-      <h1 className="mb-1 text-xl font-semibold tracking-tight text-zinc-900">
-        Analytics
-      </h1>
-      <p className="mb-6 text-sm text-zinc-500">
-        {a.total.toLocaleString()} visible members. Blocked members excluded
-        from all counts.
-      </p>
+    <main className="mx-auto max-w-[1400px] px-6 py-8">
+      <div className="mb-8">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+          Dashboard
+        </span>
+        <div className="mt-1 flex items-baseline gap-3">
+          <h1 className="font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+            Analytics
+          </h1>
+          <span className="font-mono text-xs tabular-nums text-zinc-500">
+            {a.total.toLocaleString()} visible members
+          </span>
+        </div>
+        <p className="mt-2 text-sm text-zinc-500">
+          Blocked members excluded from all counts.
+        </p>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Section
           title="Member growth"

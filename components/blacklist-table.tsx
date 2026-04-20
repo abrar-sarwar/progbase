@@ -89,14 +89,19 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
-            Blacklist
-          </h1>
-          <span className="text-sm text-zinc-500">
-            {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+            Moderation
           </span>
+          <div className="mt-1 flex items-baseline gap-3">
+            <h1 className="font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+              Blacklist
+            </h1>
+            <span className="font-mono text-xs tabular-nums text-zinc-500">
+              {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Input

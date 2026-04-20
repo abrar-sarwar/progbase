@@ -93,15 +93,20 @@ export function MembersTable({ members }: { members: Member[] }) {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
-            Members
-          </h1>
-          <span className="text-sm text-zinc-500">
-            {filtered.length.toLocaleString()}{" "}
-            {filtered.length === 1 ? "member" : "members"}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+            Roster
           </span>
+          <div className="mt-1 flex items-baseline gap-3">
+            <h1 className="font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+              Members
+            </h1>
+            <span className="font-mono text-xs tabular-nums text-zinc-500">
+              {filtered.length.toLocaleString()}{" "}
+              {filtered.length === 1 ? "person" : "people"}
+            </span>
+          </div>
         </div>
         <Input
           placeholder="Search name or email…"
@@ -110,9 +115,9 @@ export function MembersTable({ members }: { members: Member[] }) {
           className="w-72"
         />
       </div>
-      <div className="overflow-x-auto rounded-lg border border-zinc-200">
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-[0_1px_0_rgba(9,9,11,0.04)]">
         <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-0 bg-zinc-50">
+          <thead className="sticky top-14 bg-zinc-50/90 backdrop-blur">
             <tr>
               {COLUMNS.map((c) => (
                 <th

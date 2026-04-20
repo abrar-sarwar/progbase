@@ -12,11 +12,18 @@ export default async function MemberEditPage({
   if (!member) notFound();
 
   return (
-    <main className="mx-auto max-w-[1200px] px-6 py-6">
-      <h1 className="mb-1 text-xl font-semibold tracking-tight text-zinc-900">
-        {member.name ?? member.email ?? member.user_api_id}
-      </h1>
-      <p className="mb-6 text-sm text-zinc-500">{member.email ?? "—"}</p>
+    <main className="mx-auto max-w-[1200px] px-6 py-8">
+      <div className="mb-6">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+          Member · editable
+        </span>
+        <h1 className="mt-1 font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+          {member.name ?? member.email ?? member.user_api_id}
+        </h1>
+        <p className="mt-1 font-mono text-xs text-zinc-500">
+          {member.email ?? "—"}
+        </p>
+      </div>
       <div className="grid gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <MemberEditForm member={member} />
         <aside className="rounded-lg border border-zinc-200 bg-white p-5">

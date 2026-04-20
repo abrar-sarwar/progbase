@@ -1,9 +1,28 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
+import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { headers } from "next/headers";
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const sans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans-ui",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "progbase",
@@ -23,30 +42,33 @@ export default async function RootLayout({
   const showHeader = Boolean(userId) && !isPublic;
 
   return (
-    <ClerkProvider
-      signInUrl="/sign-in"
-      afterSignInUrl="/"
-      afterSignUpUrl="/"
-      appearance={{
-        variables: {
-          colorPrimary: "#4f46e5",
-          colorText: "#18181b",
-          colorTextSecondary: "#71717a",
-          colorBackground: "#ffffff",
-          colorInputBackground: "#ffffff",
-          colorInputText: "#18181b",
-          borderRadius: "6px",
-          fontFamily:
-            "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-        },
-      }}
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${sans.variable} ${mono.variable}`}
     >
-      <html lang="en" className="bg-white text-zinc-900 antialiased">
-        <body className="min-h-screen">
+      <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased">
+        <ClerkProvider
+          signInUrl="/sign-in"
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
+          appearance={{
+            variables: {
+              colorPrimary: "#4f46e5",
+              colorText: "#09090b",
+              colorTextSecondary: "#71717a",
+              colorBackground: "#ffffff",
+              colorInputBackground: "#ffffff",
+              colorInputText: "#09090b",
+              borderRadius: "6px",
+              fontFamily:
+                "var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif",
+            },
+          }}
+        >
           {showHeader && <Header currentPath={pathname} />}
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

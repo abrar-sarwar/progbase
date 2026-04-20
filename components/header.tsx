@@ -21,14 +21,24 @@ export async function Header({ currentPath }: { currentPath: string }) {
   const showStale = stale && !dismissed;
 
   return (
-    <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-zinc-200 bg-white px-6">
-      <Link href="/" className="flex items-center gap-2">
-        <span className="inline-block h-3.5 w-3.5 rounded-sm bg-indigo-600" />
-        <span className="text-[15px] font-semibold tracking-tight text-zinc-900">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 bg-white/85 px-6 backdrop-blur-md">
+      <Link
+        href="/"
+        className="group flex items-baseline gap-2"
+        aria-label="progbase home"
+      >
+        <span
+          aria-hidden
+          className="block h-2.5 w-2.5 rotate-45 rounded-[2px] bg-indigo-600 transition-transform group-hover:rotate-[225deg]"
+        />
+        <span className="font-display text-[19px] font-semibold italic tracking-tight-2 text-zinc-900">
           progbase
         </span>
+        <span className="hidden text-[10px] uppercase tracking-[0.18em] text-zinc-400 sm:inline">
+          · progsu · gsu
+        </span>
       </Link>
-      <nav className="flex items-center gap-6">
+      <nav className="hidden items-center gap-7 md:flex">
         {NAV.map((item) => {
           const active =
             item.href === "/"
@@ -39,7 +49,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex h-12 items-center text-sm transition-colors",
+                "relative flex h-14 items-center text-[13px] font-medium tracking-tight transition-colors",
                 active
                   ? "text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-900",
@@ -47,7 +57,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
             >
               {item.label}
               {active && (
-                <span className="absolute inset-x-0 -bottom-px h-0.5 bg-indigo-600" />
+                <span className="absolute inset-x-0 -bottom-px h-[2px] bg-indigo-600" />
               )}
             </Link>
           );
@@ -61,7 +71,9 @@ export async function Header({ currentPath }: { currentPath: string }) {
             className="flex items-center gap-1"
           >
             <Link href="/import">
-              <Chip tone="amber">CSV {days}d stale — re-upload</Chip>
+              <Chip tone="amber">
+                CSV {days}d stale — re-upload
+              </Chip>
             </Link>
             <button
               type="submit"
@@ -73,10 +85,11 @@ export async function Header({ currentPath }: { currentPath: string }) {
           </form>
         )}
         <UserButton
-          afterSignOutUrl="/sign-in"
           appearance={{
             elements: {
-              userButtonAvatarBox: "h-7 w-7",
+              userButtonAvatarBox: "h-7 w-7 ring-1 ring-zinc-200",
+              userButtonTrigger:
+                "focus:shadow-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
             },
           }}
         />

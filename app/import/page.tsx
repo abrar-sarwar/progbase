@@ -9,14 +9,19 @@ export default async function ImportPage() {
   const days = staleDays(last?.uploaded_at ?? null);
 
   return (
-    <main className="mx-auto max-w-xl px-6 py-6">
-      <h1 className="mb-1 text-xl font-semibold tracking-tight text-zinc-900">
-        Import Luma CSV
-      </h1>
-      <p className="mb-6 text-sm text-zinc-500">
-        Upload the latest Luma members export. Existing member data (major,
-        tags, etc.) will not be overwritten.
-      </p>
+    <main className="mx-auto max-w-xl px-6 py-8">
+      <div className="mb-8">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+          Data pipeline
+        </span>
+        <h1 className="mt-1 font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+          Import Luma CSV
+        </h1>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
+          Upload the latest Luma members export. Existing e-board data —
+          majors, tags, notes — is preserved on every re-import.
+        </p>
+      </div>
 
       <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="mb-3 text-sm font-medium text-zinc-900">Last import</h2>
