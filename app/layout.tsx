@@ -48,11 +48,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const { userId } = await auth();
-  const pathname = headers().get("x-pathname") ?? "/";
+  const pathname = (await headers()).get("x-pathname") ?? "/";
   const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
   const showHeader = Boolean(userId) && !isPublic;
 
-  const themeCookie = cookies().get("progbase-theme")?.value;
+  const themeCookie = (await cookies()).get("progbase-theme")?.value;
   const isDark = themeCookie === "dark";
 
   return (
