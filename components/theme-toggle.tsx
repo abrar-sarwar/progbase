@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/cn";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -21,7 +21,6 @@ type ViewTransitionDoc = Document & {
 
 export function ThemeToggle({ className }: { className?: string }) {
   const [isDark, setIsDark] = useState<boolean | null>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -40,38 +39,14 @@ export function ThemeToggle({ className }: { className?: string }) {
     const next = !root.classList.contains("dark");
     const doc = document as ViewTransitionDoc;
 
-    // Prefer the View Transitions API with a circle reveal from the toggle.
+    // Prefer the browser's built-in View Transitions cross-fade. The
+    // browser handles the snapshot + blending itself and cleans up
+    // reliably; we don't fight it with custom pseudo-element animations.
     if (
       typeof doc.startViewTransition === "function" &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      const rect = btnRef.current?.getBoundingClientRect();
-      const cx = rect ? rect.left + rect.width / 2 : window.innerWidth - 60;
-      const cy = rect ? rect.top + rect.height / 2 : 28;
-      const endRadius = Math.hypot(
-        Math.max(cx, window.innerWidth - cx),
-        Math.max(cy, window.innerHeight - cy),
-      );
-
-      root.classList.add("vt-running");
-      const transition = doc.startViewTransition(() => applyTheme(next));
-
-      transition.ready.then(() => {
-        const clipFrom = `circle(0px at ${cx}px ${cy}px)`;
-        const clipTo = `circle(${endRadius}px at ${cx}px ${cy}px)`;
-        root.animate(
-          { clipPath: [clipFrom, clipTo] },
-          {
-            duration: 340,
-            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        );
-      });
-
-      transition.finished.finally(() => {
-        root.classList.remove("vt-running");
-      });
+      doc.startViewTransition(() => applyTheme(next));
       return;
     }
 
@@ -89,7 +64,6 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <button
-      ref={btnRef}
       type="button"
       onClick={toggle}
       aria-label={showSun ? "Switch to light mode" : "Switch to dark mode"}
