@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { UserButton } from "@clerk/nextjs";
 import { cookies } from "next/headers";
 import { cn } from "@/lib/cn";
 import { Chip } from "@/components/ui/chip";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PresenceStack } from "@/components/presence-stack";
+import { UserMenu } from "@/components/user-menu";
 import { getLastImport, isStale, staleDays } from "@/lib/freshness";
 import logo from "../public/progbase.png";
 
@@ -91,16 +91,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
           )}
           <PresenceStack />
           <ThemeToggle />
-          <UserButton
-            appearance={{
-              elements: {
-                userButtonAvatarBox:
-                  "h-7 w-7 ring-1 ring-zinc-200 dark:ring-zinc-700",
-                userButtonTrigger:
-                  "focus:shadow-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
-              },
-            }}
-          />
+          <UserMenu />
         </div>
       </div>
     </header>

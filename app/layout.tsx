@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { SessionProvider } from "next-auth/react";
 import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { cookies, headers } from "next/headers";
+import { auth } from "@/auth";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -31,8 +31,6 @@ export const metadata: Metadata = {
 
 const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized"];
 
-// Fallback for first-visit users whose cookie isn't set yet — honors
-// prefers-color-scheme before React hydrates.
 const themeBootstrap = `
 try {
   if (!document.cookie.match(/(?:^|; )progbase-theme=/)) {
@@ -47,10 +45,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  const session = await auth();
   const pathname = headers().get("x-pathname") ?? "/";
   const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
-  const showHeader = Boolean(userId) && !isPublic;
+  const showHeader = Boolean(session?.user) && !isPublic;
 
   const themeCookie = cookies().get("progbase-theme")?.value;
   const isDark = themeCookie === "dark";
@@ -65,27 +63,10 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-50">
-        <ClerkProvider
-          signInUrl="/sign-in"
-          signInFallbackRedirectUrl="/"
-          signUpFallbackRedirectUrl="/"
-          appearance={{
-            variables: {
-              colorPrimary: "#7c3aed",
-              colorText: "#09090b",
-              colorTextSecondary: "#71717a",
-              colorBackground: "#ffffff",
-              colorInputBackground: "#ffffff",
-              colorInputText: "#09090b",
-              borderRadius: "6px",
-              fontFamily:
-                "var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif",
-            },
-          }}
-        >
+        <SessionProvider session={session}>
           {showHeader && <Header currentPath={pathname} />}
           {children}
-        </ClerkProvider>
+        </SessionProvider>
       </body>
     </html>
   );

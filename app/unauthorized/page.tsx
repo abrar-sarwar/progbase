@@ -1,5 +1,5 @@
-import { SignOutButton } from "@clerk/nextjs";
 import Image from "next/image";
+import { signOut } from "@/auth";
 import logo from "../../public/progbase.png";
 
 export default function UnauthorizedPage() {
@@ -26,13 +26,20 @@ export default function UnauthorizedPage() {
           access, reach out to the VP. Otherwise, sign out and try a different
           Google account.
         </p>
-        <div className="mt-8">
-          <SignOutButton redirectUrl="/sign-in">
-            <button className="inline-flex h-9 items-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800">
-              Sign out
-            </button>
-          </SignOutButton>
-        </div>
+        <form
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/sign-in" });
+          }}
+          className="mt-8"
+        >
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-zinc-800"
+          >
+            Sign out
+          </button>
+        </form>
       </div>
     </main>
   );

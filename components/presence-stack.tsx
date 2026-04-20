@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { getSupabaseBrowser } from "@/lib/supabase-browser";
 import { cn } from "@/lib/cn";
 
@@ -26,30 +26,28 @@ function initials(name: string, email: string): string {
 }
 
 function colorSeed(s: string): string {
-  // deterministic pastel hue from email
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
   return `hsl(${h} 55% 55%)`;
 }
 
 export function PresenceStack() {
-  const { user, isLoaded } = useUser();
+  const { data: session, status } = useSession();
   const [viewers, setViewers] = useState<Viewer[]>([]);
 
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (status !== "authenticated") return;
+    const email = session?.user?.email;
+    if (!email) return;
+
     const supabase = getSupabaseBrowser();
     if (!supabase) return;
-
-    const email =
-      user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? "";
-    if (!email) return;
 
     const me: Viewer = {
       key: email.toLowerCase(),
       email,
-      name: user.fullName ?? user.firstName ?? email,
-      imageUrl: user.imageUrl ?? null,
+      name: session.user?.name ?? email,
+      imageUrl: session.user?.image ?? null,
       joinedAt: Date.now(),
     };
 
@@ -64,7 +62,6 @@ export function PresenceStack() {
         for (const list of Object.values(state)) {
           for (const v of list) flat.push(v);
         }
-        // Dedupe by key (multiple tabs per user) keeping the earliest join.
         const uniq = new Map<string, Viewer>();
         for (const v of flat) {
           const prev = uniq.get(v.key);
@@ -74,8 +71,8 @@ export function PresenceStack() {
           Array.from(uniq.values()).sort((a, b) => a.joinedAt - b.joinedAt),
         );
       })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
+      .subscribe(async (s) => {
+        if (s === "SUBSCRIBED") {
           await channel.track(me);
         }
       });
@@ -83,11 +80,11 @@ export function PresenceStack() {
     return () => {
       channel.unsubscribe();
     };
-  }, [isLoaded, user]);
+  }, [status, session]);
 
   if (viewers.length === 0) return null;
 
-  const me = user?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? "";
+  const me = session?.user?.email?.toLowerCase() ?? "";
   const others = viewers.filter((v) => v.key !== me);
   if (others.length === 0) return null;
 
@@ -127,6 +124,7 @@ function Avatar({ viewer, stackIndex }: { viewer: Viewer; stackIndex: number }) 
       style={{ zIndex, marginLeft: stackIndex === 0 ? 0 : -8 }}
     >
       {viewer.imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={viewer.imageUrl}
           alt=""

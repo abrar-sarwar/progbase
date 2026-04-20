@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { supabaseServer } from "@/lib/supabase-server";
 import { isAllowed } from "@/lib/allowlist";
 import { parseLumaCsv, type ParseError } from "@/lib/csv";
@@ -21,13 +21,13 @@ export type ImportResult = {
 };
 
 async function requireEditorEmail(): Promise<string> {
-  const { userId, sessionClaims } = await auth();
-  if (!userId) throw new Error("Not signed in");
-  const email = (sessionClaims?.email as string | undefined) ?? null;
+  const session = await auth();
+  const email = session?.user?.email ?? null;
+  if (!email) throw new Error("Not signed in");
   if (!isAllowed(email, process.env.ALLOWED_EMAILS)) {
     throw new Error("Not authorized");
   }
-  return email!.trim().toLowerCase();
+  return email.trim().toLowerCase();
 }
 
 function storagePath(): string {
