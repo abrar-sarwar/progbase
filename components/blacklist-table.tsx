@@ -142,9 +142,9 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200">
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-[0_1px_0_rgba(9,9,11,0.04)]">
         <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-0 bg-zinc-50">
+          <thead className="bg-zinc-50">
             <tr>
               <Th
                 k="email"
@@ -238,17 +238,24 @@ function Th({
 }) {
   return (
     <th
+      scope="col"
       className={cn(
-        "h-9 cursor-pointer select-none border-b border-zinc-200 px-3 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-900",
+        "h-10 cursor-pointer select-none border-b border-zinc-200 px-3 text-left text-xs font-medium text-zinc-600 hover:text-zinc-900",
       )}
       onClick={() => onClick(k)}
     >
-      {label}
-      {sortKey === k && (
-        <span className="ml-1 text-zinc-400">
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <span
+          aria-hidden
+          className={cn(
+            "w-2 text-zinc-400 transition-opacity",
+            sortKey === k ? "opacity-100" : "opacity-0",
+          )}
+        >
           {sortDir === "asc" ? "↑" : "↓"}
         </span>
-      )}
+      </span>
     </th>
   );
 }

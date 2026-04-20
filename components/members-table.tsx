@@ -117,26 +117,36 @@ export function MembersTable({ members }: { members: Member[] }) {
       </div>
       <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-[0_1px_0_rgba(9,9,11,0.04)]">
         <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-14 bg-zinc-50/90 backdrop-blur">
+          <thead className="bg-zinc-50">
             <tr>
               {COLUMNS.map((c) => (
                 <th
                   key={c.key}
+                  scope="col"
                   className={cn(
-                    "h-9 cursor-pointer select-none border-b border-zinc-200 px-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500 hover:text-zinc-900",
+                    "h-10 cursor-pointer select-none border-b border-zinc-200 px-3 text-xs font-medium text-zinc-600 hover:text-zinc-900",
                     c.align === "right" ? "text-right" : "text-left",
                   )}
                   onClick={() => toggleSort(c.key)}
                 >
-                  {c.label}
-                  {sortKey === c.key && (
-                    <span className="ml-1 text-zinc-400">
+                  <span className="inline-flex items-center gap-1">
+                    {c.label}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "w-2 text-zinc-400 transition-opacity",
+                        sortKey === c.key ? "opacity-100" : "opacity-0",
+                      )}
+                    >
                       {sortDir === "asc" ? "↑" : "↓"}
                     </span>
-                  )}
+                  </span>
                 </th>
               ))}
-              <th className="h-9 border-b border-zinc-200 px-3 text-right text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+              <th
+                scope="col"
+                className="h-10 border-b border-zinc-200 px-3 text-right text-xs font-medium text-zinc-600"
+              >
                 Actions
               </th>
             </tr>
