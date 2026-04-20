@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
-import { addBlacklist, removeBlacklist } from "@/app/blacklist/actions";
+import { addBlacklist, removeBlacklist } from "@/app/(protected)/blacklist/actions";
 
 type SortKey = "email" | "name" | "added_by" | "added_at";
 type SortDir = "asc" | "desc";

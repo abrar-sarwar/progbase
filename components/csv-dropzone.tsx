@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
-import { importCsv, type ImportResult } from "@/app/import/actions";
+import { importCsv, type ImportResult } from "@/app/(protected)/import/actions";
 import { useRouter } from "next/navigation";
 
 export function CsvDropzone() {

@@ -1,23 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
-import { cn } from "@/lib/cn";
 import { Chip } from "@/components/ui/chip";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PresenceStack } from "@/components/presence-stack";
 import { UserMenu } from "@/components/user-menu";
+import { NavLinks } from "@/components/nav-links";
 import { getLastImport, isStale, staleDays } from "@/lib/freshness";
 import logo from "../public/progbase.png";
 
-const NAV = [
-  { href: "/", label: "Members" },
-  { href: "/eboard", label: "E-board" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/import", label: "Import" },
-  { href: "/blacklist", label: "Blacklist" },
-];
-
-export async function Header({ currentPath }: { currentPath: string }) {
+export async function Header() {
   const last = await getLastImport();
   const dismissed =
     cookies().get("progbase_stale_dismissed")?.value === "1";
@@ -45,31 +37,7 @@ export async function Header({ currentPath }: { currentPath: string }) {
             progbase
           </span>
         </Link>
-        <nav className="hidden items-center gap-6 md:flex">
-          {NAV.map((item) => {
-            const active =
-              item.href === "/"
-                ? currentPath === "/"
-                : currentPath.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative flex h-14 items-center text-[13px] font-medium transition-colors",
-                  active
-                    ? "text-zinc-900 dark:text-zinc-50"
-                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50",
-                )}
-              >
-                {item.label}
-                {active && (
-                  <span className="absolute inset-x-0 -bottom-px h-[2px] bg-violet-600 dark:bg-violet-400" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <NavLinks />
         <div className="flex shrink-0 items-center gap-2">
           {showStale && days !== null && (
             <form

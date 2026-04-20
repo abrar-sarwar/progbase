@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { signOut } from "@/auth";
-import logo from "../../public/progbase.png";
+import logo from "../../../public/progbase.png";
 
 export default function UnauthorizedPage() {
   return (

@@ -4,7 +4,7 @@ import { isEboard } from "@/lib/eboard";
 import { listEboardEntries, toEntry } from "@/lib/eboard-db";
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../public/progbase.png";
+import logo from "../../public/progbase.png";
 
 export default async function MembersPage() {
   const [all, eboardRows] = await Promise.all([

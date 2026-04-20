@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
-import { Header } from "@/components/header";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
-import { isAllowed } from "@/lib/allowlist";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -31,12 +28,6 @@ export const metadata: Metadata = {
   description: "Internal dashboard for progsu (GSU)",
 };
 
-// Paths that skip auth enforcement. /api/auth/* is defensive — API route
-// handlers don't render this layout, so the NextAuth handlers are already
-// unreachable from this code path, but listing it keeps the intent explicit
-// if a future refactor wires this check into something that does see APIs.
-const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized", "/api/auth"];
-
 const themeBootstrap = `
 try {
   if (!document.cookie.match(/(?:^|; )progbase-theme=/)) {
@@ -52,18 +43,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const pathname = headers().get("x-pathname") ?? "/";
-  const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
-
-  if (!isPublic) {
-    if (!session?.user?.email) redirect("/sign-in");
-    if (!isAllowed(session.user.email, process.env.ALLOWED_EMAILS)) {
-      redirect("/unauthorized");
-    }
-  }
-
-  const showHeader = Boolean(session?.user) && !isPublic;
-
   const themeCookie = cookies().get("progbase-theme")?.value;
   const isDark = themeCookie === "dark";
 
@@ -77,10 +56,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
       <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-50">
-        <SessionProvider session={session}>
-          {showHeader && <Header currentPath={pathname} />}
-          {children}
-        </SessionProvider>
+        <SessionProvider session={session}>{children}</SessionProvider>
       </body>
     </html>
   );

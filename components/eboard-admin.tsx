@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { addEboardEntry, removeEboardEntry } from "@/app/eboard/actions";
+import { addEboardEntry, removeEboardEntry } from "@/app/(protected)/eboard/actions";
 
 type Entry = {
   id: string;
