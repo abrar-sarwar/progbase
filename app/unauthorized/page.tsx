@@ -12,7 +12,7 @@ export default function UnauthorizedPage() {
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
           403 · not on list
         </span>
-        <h1 className="mt-3 font-display text-5xl font-light tracking-tight-2 text-zinc-900">
+        <h1 className="mt-3 font-display text-[44px] font-normal leading-[1.05] tracking-tight-2 text-zinc-900">
           Not your dashboard.
         </h1>
         <p className="mt-4 max-w-sm text-sm leading-relaxed text-zinc-600">

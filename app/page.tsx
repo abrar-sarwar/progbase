@@ -12,7 +12,7 @@ export default async function MembersPage() {
         <span className="text-[11px] uppercase tracking-[0.22em] text-indigo-600">
           step one
         </span>
-        <h1 className="mt-3 max-w-2xl font-display text-5xl font-light leading-[1.02] tracking-tight-2 text-zinc-900">
+        <h1 className="mt-3 max-w-2xl font-display text-[44px] font-normal leading-[1.05] tracking-tight-2 text-zinc-900">
           No members yet.
           <span className="block italic text-zinc-400">
             Let&apos;s seed the roster.

@@ -99,7 +99,7 @@ export function MembersTable({ members }: { members: Member[] }) {
             Roster
           </span>
           <div className="mt-1 flex items-baseline gap-3">
-            <h1 className="font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+            <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
               Members
             </h1>
             <span className="font-mono text-xs tabular-nums text-zinc-500">

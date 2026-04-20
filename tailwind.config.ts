@@ -25,7 +25,7 @@ const config: Config = {
         ],
       },
       letterSpacing: {
-        "tight-2": "-0.035em",
+        "tight-2": "-0.022em",
       },
       backgroundImage: {
         grain:

@@ -14,7 +14,7 @@ export default async function ImportPage() {
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
           Data pipeline
         </span>
-        <h1 className="mt-1 font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
           Import Luma CSV
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">

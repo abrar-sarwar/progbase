@@ -16,7 +16,7 @@ export default async function BlacklistPage() {
           <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
             Moderation
           </span>
-          <h1 className="mt-1 font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+          <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
             Blacklist
           </h1>
         </div>

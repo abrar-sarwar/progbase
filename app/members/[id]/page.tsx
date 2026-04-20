@@ -17,7 +17,7 @@ export default async function MemberEditPage({
         <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
           Member · editable
         </span>
-        <h1 className="mt-1 font-display text-4xl font-light tracking-tight-2 text-zinc-900">
+        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
           {member.name ?? member.email ?? member.user_api_id}
         </h1>
         <p className="mt-1 font-mono text-xs text-zinc-500">
