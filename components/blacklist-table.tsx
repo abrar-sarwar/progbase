@@ -89,16 +89,16 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
 
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-fade-up">
         <div>
-          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
             Moderation
           </span>
           <div className="mt-1 flex items-baseline gap-3">
-            <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
+            <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
               Blacklist
             </h1>
-            <span className="font-mono text-xs tabular-nums text-zinc-500">
+            <span className="font-mono text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
               {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
             </span>
           </div>
@@ -117,7 +117,7 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
       </div>
 
       {addOpen && (
-        <div className="mb-4 grid gap-2 rounded-lg border border-zinc-200 bg-white p-4 md:grid-cols-[1fr_1fr_2fr_auto]">
+        <div className="mb-4 grid gap-2 rounded-lg border border-zinc-200 bg-white p-4 md:grid-cols-[1fr_1fr_2fr_auto] dark:border-zinc-800 dark:bg-zinc-900">
           <Input
             placeholder="email@example.com"
             value={newEmail}
@@ -137,14 +137,16 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
             Add
           </Button>
           {formError && (
-            <p className="col-span-full text-xs text-red-600">{formError}</p>
+            <p className="col-span-full text-xs text-red-600 dark:text-red-400">
+              {formError}
+            </p>
           )}
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-[0_1px_0_rgba(9,9,11,0.04)]">
+      <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-[0_1px_0_rgba(9,9,11,0.04)] dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none">
         <table className="w-full border-collapse text-sm">
-          <thead className="bg-zinc-50">
+          <thead className="bg-zinc-50 dark:bg-zinc-900/80">
             <tr>
               <Th
                 k="email"
@@ -160,7 +162,7 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
                 sortDir={sortDir}
                 onClick={toggleSort}
               />
-              <th className="h-9 border-b border-zinc-200 px-3 text-left text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+              <th className="h-10 border-b border-zinc-200 px-3 text-left text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
                 Reason
               </th>
               <Th
@@ -177,7 +179,7 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
                 sortDir={sortDir}
                 onClick={toggleSort}
               />
-              <th className="h-9 border-b border-zinc-200 px-3 text-right text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+              <th className="h-10 border-b border-zinc-200 px-3 text-right text-xs font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
                 Remove
               </th>
             </tr>
@@ -186,22 +188,26 @@ export function BlacklistTable({ entries }: { entries: BlacklistEntry[] }) {
             {filtered.map((e) => (
               <tr
                 key={e.email}
-                className="border-b border-zinc-100 transition-colors hover:bg-zinc-50/60"
+                className="border-b border-zinc-100 transition-colors last:border-0 hover:bg-zinc-50/60 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
               >
-                <td className="h-10 px-3 font-mono text-zinc-700">{e.email}</td>
-                <td className="h-10 px-3 text-zinc-700">
-                  {e.name ?? <span className="text-zinc-300">—</span>}
+                <td className="h-10 px-3 font-mono text-zinc-600 dark:text-zinc-300">
+                  {e.email}
+                </td>
+                <td className="h-10 px-3 text-zinc-600 dark:text-zinc-300">
+                  {e.name ?? (
+                    <span className="text-zinc-300 dark:text-zinc-600">—</span>
+                  )}
                 </td>
                 <td
-                  className="h-10 max-w-[300px] truncate px-3 text-zinc-700"
+                  className="h-10 max-w-[300px] truncate px-3 text-zinc-600 dark:text-zinc-300"
                   title={e.reason}
                 >
                   {e.reason}
                 </td>
-                <td className="h-10 px-3 font-mono text-xs text-zinc-600">
+                <td className="h-10 px-3 font-mono text-xs text-zinc-500 dark:text-zinc-400">
                   {e.added_by}
                 </td>
-                <td className="h-10 px-3 font-mono text-zinc-700 tabular-nums">
+                <td className="h-10 px-3 font-mono text-zinc-600 tabular-nums dark:text-zinc-300">
                   {formatDate(e.added_at)}
                 </td>
                 <td className="h-10 px-3 text-right">
@@ -240,7 +246,7 @@ function Th({
     <th
       scope="col"
       className={cn(
-        "h-10 cursor-pointer select-none border-b border-zinc-200 px-3 text-left text-xs font-medium text-zinc-600 hover:text-zinc-900",
+        "h-10 cursor-pointer select-none border-b border-zinc-200 px-3 text-left text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-50",
       )}
       onClick={() => onClick(k)}
     >
@@ -249,7 +255,7 @@ function Th({
         <span
           aria-hidden
           className={cn(
-            "w-2 text-zinc-400 transition-opacity",
+            "w-2 text-zinc-400 transition-opacity dark:text-zinc-500",
             sortKey === k ? "opacity-100" : "opacity-0",
           )}
         >

@@ -15,8 +15,8 @@ export default async function AnalyticsPage() {
 
   if (a.total === 0) {
     return (
-      <main className="mx-auto max-w-[1400px] px-6 py-6">
-        <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center text-sm text-zinc-500">
+      <main className="mx-auto max-w-[1400px] px-6 py-8">
+        <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
           No members yet. Upload the Luma CSV to see analytics.
         </div>
       </main>
@@ -25,23 +25,23 @@ export default async function AnalyticsPage() {
 
   return (
     <main className="mx-auto max-w-[1400px] px-6 py-8">
-      <div className="mb-8">
-        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+      <div className="mb-8 animate-fade-up">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
           Dashboard
         </span>
         <div className="mt-1 flex items-baseline gap-3">
-          <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
+          <h1 className="font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
             Analytics
           </h1>
-          <span className="font-mono text-xs tabular-nums text-zinc-500">
+          <span className="font-mono text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
             {a.total.toLocaleString()} visible members
           </span>
         </div>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
           Blocked members excluded from all counts.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 animate-fade-up">
         <Section
           title="Member growth"
           subtitle="Cumulative, by month of first Luma event"

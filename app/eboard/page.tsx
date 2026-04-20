@@ -20,45 +20,45 @@ export default async function EboardPage() {
           unitPlural="members"
         />
       ) : (
-        <div className="mb-8">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+        <div className="mb-8 animate-fade-up">
+          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
             Leadership
           </span>
-          <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
+          <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
             E-board
           </h1>
-          <p className="mt-3 max-w-md text-sm text-zinc-500">
+          <p className="mt-3 max-w-md text-sm text-zinc-500 dark:text-zinc-400">
             No e-board members have attended a Luma event yet, so none appear
             in the roster. The list of expected names is below.
           </p>
         </div>
       )}
 
-      <section className="mt-10">
+      <section className="mt-10 animate-fade-up">
         <div className="mb-3 flex items-baseline justify-between">
           <div>
-            <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+            <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
               Not yet in roster
             </span>
-            <h2 className="mt-1 font-display text-xl font-normal tracking-tight-2 text-zinc-900">
+            <h2 className="mt-1 font-display text-xl font-normal tracking-tight-2 text-zinc-900 dark:text-zinc-50">
               {missing.length === 0
                 ? "Everyone's accounted for"
                 : `${missing.length} ${missing.length === 1 ? "person" : "people"} missing`}
             </h2>
           </div>
-          <span className="font-mono text-xs tabular-nums text-zinc-500">
+          <span className="font-mono text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
             {EBOARD.length} total on list
           </span>
         </div>
         {missing.length === 0 ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
             Every e-board name maps to a member in the Luma roster.
           </div>
         ) : (
-          <div className="rounded-lg border border-zinc-200 bg-white p-5">
-            <p className="mb-3 text-xs text-zinc-500">
+          <div className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
               These e-board entries in{" "}
-              <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[11px]">
+              <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[11px] dark:bg-zinc-800">
                 lib/eboard.ts
               </code>{" "}
               have no matching member. Either they haven&apos;t attended a
@@ -69,12 +69,12 @@ export default async function EboardPage() {
               {missing.map((entry) => (
                 <li
                   key={entry.label}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                   title={entry.email ?? entry.name ?? entry.label}
                 >
                   <span>{entry.label}</span>
                   {entry.email && (
-                    <span className="font-mono text-[10px] text-zinc-400">
+                    <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">
                       {entry.email}
                     </span>
                   )}

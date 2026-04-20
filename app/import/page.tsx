@@ -10,38 +10,42 @@ export default async function ImportPage() {
 
   return (
     <main className="mx-auto max-w-xl px-6 py-8">
-      <div className="mb-8">
-        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-400">
+      <div className="mb-8 animate-fade-up">
+        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
           Data pipeline
         </span>
-        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900">
+        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
           Import Luma CSV
         </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600">
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
           Upload the latest Luma members export. Existing e-board data —
           majors, tags, notes — is preserved on every re-import.
         </p>
       </div>
 
-      <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="mb-3 text-sm font-medium text-zinc-900">Last import</h2>
+      <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5 animate-fade-up dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          Last import
+        </h2>
         {last ? (
           <div className="space-y-2 text-sm">
-            <p className="text-zinc-700">
+            <p className="text-zinc-700 dark:text-zinc-300">
               <span className="font-medium">
                 {formatDate(last.uploaded_at)}
               </span>{" "}
               by{" "}
-              <span className="font-mono text-zinc-900">
+              <span className="font-mono text-zinc-900 dark:text-zinc-50">
                 {last.uploaded_by}
               </span>
               {days !== null && (
-                <span className="ml-2 text-zinc-500">({days}d ago)</span>
+                <span className="ml-2 text-zinc-500 dark:text-zinc-400">
+                  ({days}d ago)
+                </span>
               )}
             </p>
             <div className="flex flex-wrap gap-1.5">
               <Chip tone="green">{last.new_count ?? 0} new</Chip>
-              <Chip tone="indigo">{last.updated_count ?? 0} updated</Chip>
+              <Chip tone="violet">{last.updated_count ?? 0} updated</Chip>
               <Chip tone="zinc">{last.blocked_count ?? 0} blocked</Chip>
               <Chip tone={last.error_count ? "amber" : "zinc"}>
                 {last.error_count ?? 0} errors
@@ -50,7 +54,7 @@ export default async function ImportPage() {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             No imports yet. Upload the CSV below to seed the dashboard.
           </p>
         )}

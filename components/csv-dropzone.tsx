@@ -63,13 +63,13 @@ export function CsvDropzone() {
         }}
         className={`rounded-lg border-2 border-dashed p-10 text-center transition-colors ${
           dragOver
-            ? "border-indigo-400 bg-indigo-50"
-            : "border-zinc-300 bg-zinc-50"
+            ? "border-violet-400 bg-violet-50 dark:border-violet-500 dark:bg-violet-950/40"
+            : "border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
         }`}
       >
-        <p className="text-sm text-zinc-700">
+        <p className="text-sm text-zinc-700 dark:text-zinc-300">
           Drop CSV here, or{" "}
-          <label className="cursor-pointer text-indigo-600 hover:text-indigo-700">
+          <label className="cursor-pointer text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300">
             browse
             <input
               type="file"
@@ -79,15 +79,17 @@ export function CsvDropzone() {
             />
           </label>
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           Max 10 MB. Required columns: user_api_id, name, email.
         </p>
       </div>
       {file && (
-        <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-white p-3">
+        <div className="flex items-center justify-between rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="min-w-0">
-            <p className="truncate text-sm text-zinc-900">{file.name}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="truncate text-sm text-zinc-900 dark:text-zinc-50">
+              {file.name}
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {(file.size / 1024).toFixed(1)} KB
             </p>
           </div>
@@ -100,19 +102,19 @@ export function CsvDropzone() {
         <div
           className={`rounded-lg border p-4 ${
             result.ok
-              ? "border-emerald-200 bg-emerald-50"
-              : "border-red-200 bg-red-50"
+              ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/30"
+              : "border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/30"
           }`}
         >
           {result.message && (
-            <p className="mb-2 text-sm font-medium text-zinc-900">
+            <p className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-50">
               {result.message}
             </p>
           )}
           {result.ok ? (
             <div className="flex flex-wrap gap-1.5">
               <Chip tone="green">{result.newCount} new</Chip>
-              <Chip tone="indigo">{result.updatedCount} updated</Chip>
+              <Chip tone="violet">{result.updatedCount} updated</Chip>
               <Chip tone="zinc">{result.blockedCount} blocked</Chip>
               <Chip tone={result.errorCount ? "amber" : "zinc"}>
                 {result.errorCount} errors
@@ -121,10 +123,10 @@ export function CsvDropzone() {
           ) : null}
           {result.errors.length > 0 && (
             <details className="mt-3">
-              <summary className="cursor-pointer text-xs text-zinc-600">
+              <summary className="cursor-pointer text-xs text-zinc-600 dark:text-zinc-400">
                 Error details ({result.errors.length})
               </summary>
-              <ul className="mt-2 space-y-1 text-xs text-zinc-700">
+              <ul className="mt-2 space-y-1 text-xs text-zinc-700 dark:text-zinc-300">
                 {result.errors.map((e, i) => (
                   <li key={i}>
                     Row {e.rowIndex}: {e.reason}

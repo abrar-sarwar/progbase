@@ -9,15 +9,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useChartTheme } from "./use-chart-theme";
 
 export function EmailDomainChart({
   data,
 }: {
   data: { domain: string; count: number }[];
 }) {
+  const t = useChartTheme();
   if (data.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-md bg-zinc-50 text-xs text-zinc-400">
+      <div className="flex h-48 items-center justify-center rounded-md bg-zinc-50 text-xs text-zinc-400 dark:bg-zinc-900 dark:text-zinc-500">
         No data yet
       </div>
     );
@@ -30,29 +32,29 @@ export function EmailDomainChart({
           layout="vertical"
           margin={{ top: 8, right: 8, left: 80, bottom: 8 }}
         >
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+          <CartesianGrid stroke={t.grid} strokeDasharray="3 3" />
           <XAxis
             type="number"
-            stroke="#d4d4d8"
-            tick={{ fill: "#52525b", fontSize: 11 }}
+            stroke={t.axis}
+            tick={{ fill: t.tick, fontSize: 11 }}
           />
           <YAxis
             dataKey="domain"
             type="category"
-            stroke="#d4d4d8"
-            tick={{ fill: "#52525b", fontSize: 11 }}
+            stroke={t.axis}
+            tick={{ fill: t.tick, fontSize: 11 }}
             width={100}
           />
           <Tooltip
             contentStyle={{
-              background: "#18181b",
+              background: t.tooltipBg,
               border: "none",
               borderRadius: 4,
-              color: "white",
+              color: t.tooltipText,
               fontSize: 12,
             }}
           />
-          <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="count" fill={t.accent} radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

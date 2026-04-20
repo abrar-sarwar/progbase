@@ -109,9 +109,9 @@ export function MemberEditForm({ member }: { member: Member }) {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white">
-      <div className="space-y-5 border-b border-zinc-100 p-5">
-        <h2 className="text-sm font-medium text-zinc-900">Profile</h2>
+    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="space-y-5 border-b border-zinc-100 p-5 dark:border-zinc-800">
+        <h2 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Profile</h2>
         <Field label="Description">
           <Textarea
             value={description}
@@ -162,8 +162,8 @@ export function MemberEditForm({ member }: { member: Member }) {
           </Field>
         </div>
       </div>
-      <div className="space-y-5 border-b border-zinc-100 p-5">
-        <h2 className="text-sm font-medium text-zinc-900">Social</h2>
+      <div className="space-y-5 border-b border-zinc-100 p-5 dark:border-zinc-800">
+        <h2 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Social</h2>
         <Field label="LinkedIn URL">
           <Input
             value={linkedinUrl}
@@ -173,7 +173,7 @@ export function MemberEditForm({ member }: { member: Member }) {
         </Field>
       </div>
       <div className="space-y-4 p-5">
-        <h2 className="text-sm font-medium text-zinc-900">Tags</h2>
+        <h2 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Tags</h2>
         <Field
           label="Custom tags"
           hint="Comma-separated; duplicates removed automatically."
@@ -187,7 +187,7 @@ export function MemberEditForm({ member }: { member: Member }) {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tags.map((t) => (
-              <Chip key={t} tone="indigo">
+              <Chip key={t} tone="violet">
                 {t}
               </Chip>
             ))}
@@ -195,11 +195,11 @@ export function MemberEditForm({ member }: { member: Member }) {
         )}
       </div>
       {error && (
-        <div className="border-t border-red-100 bg-red-50 p-3 text-xs text-red-700">
+        <div className="border-t border-red-100 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </div>
       )}
-      <div className="sticky bottom-0 flex items-center justify-end gap-2 rounded-b-lg border-t border-zinc-200 bg-white/90 p-3 backdrop-blur">
+      <div className="sticky bottom-0 flex items-center justify-end gap-2 rounded-b-lg border-t border-zinc-200 bg-white/90 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/90">
         <Link href="/">
           <Button variant="ghost" disabled={isPending}>
             Cancel
@@ -227,8 +227,8 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-zinc-700">{label}</span>
-      {hint && <span className="block text-[11px] text-zinc-400">{hint}</span>}
+      <span className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">{label}</span>
+      {hint && <span className="block text-[11px] text-zinc-400 dark:text-zinc-500">{hint}</span>}
       <div className="mt-1.5">{children}</div>
     </label>
   );

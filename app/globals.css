@@ -3,10 +3,23 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --accent: 124 58 237;          /* violet-600 */
+    --accent-soft: 237 233 254;    /* violet-100 */
+    --surface-muted: 244 244 245;  /* zinc-100 */
+    color-scheme: light;
+  }
+  .dark {
+    --accent: 167 139 250;         /* violet-400 */
+    --accent-soft: 46 16 101;      /* violet-950 */
+    --surface-muted: 39 39 42;     /* zinc-800 */
+    color-scheme: dark;
+  }
   html {
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 200ms ease, color 200ms ease;
   }
   body {
     font-family: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
@@ -14,6 +27,9 @@
   .font-display {
     font-family: var(--font-fraunces), Georgia, serif;
     font-optical-sizing: auto;
+  }
+  ::selection {
+    background: rgb(var(--accent) / 0.25);
   }
 }
 
@@ -27,14 +43,17 @@
     mix-blend-mode: multiply;
     opacity: 0.55;
   }
-  .rule {
+  .dark .grain::before {
+    mix-blend-mode: screen;
+    opacity: 0.08;
+  }
+  .hairline {
     background-image: linear-gradient(
-      to right,
-      rgb(228 228 231) 0 1px,
-      transparent 1px 100%
+      90deg,
+      rgb(var(--accent) / 0) 0%,
+      rgb(var(--accent) / 0.8) 50%,
+      rgb(var(--accent) / 0) 100%
     );
-    background-size: 100% 1px;
-    background-repeat: no-repeat;
-    background-position: top;
+    height: 1px;
   }
 }

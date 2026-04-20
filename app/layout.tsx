@@ -31,6 +31,16 @@ export const metadata: Metadata = {
 
 const PUBLIC_PREFIXES = ["/sign-in", "/unauthorized"];
 
+// Set theme class before paint to avoid a white flash on first render.
+const themeBootstrap = `
+try {
+  var stored = localStorage.getItem('progbase-theme');
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var dark = stored === 'dark' || (stored !== 'light' && prefersDark);
+  if (dark) document.documentElement.classList.add('dark');
+} catch (e) {}
+`;
+
 export default async function RootLayout({
   children,
 }: {
@@ -45,15 +55,19 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${fraunces.variable} ${sans.variable} ${mono.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+      </head>
+      <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased transition-colors duration-200 dark:bg-zinc-950 dark:text-zinc-50">
         <ClerkProvider
           signInUrl="/sign-in"
           signInFallbackRedirectUrl="/"
           signUpFallbackRedirectUrl="/"
           appearance={{
             variables: {
-              colorPrimary: "#4f46e5",
+              colorPrimary: "#7c3aed",
               colorText: "#09090b",
               colorTextSecondary: "#71717a",
               colorBackground: "#ffffff",

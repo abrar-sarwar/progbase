@@ -1,9 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
 import { cookies } from "next/headers";
 import { cn } from "@/lib/cn";
 import { Chip } from "@/components/ui/chip";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getLastImport, isStale, staleDays } from "@/lib/freshness";
+import logo from "../public/progbase.png";
 
 const NAV = [
   { href: "/", label: "Members" },
@@ -22,18 +25,22 @@ export async function Header({ currentPath }: { currentPath: string }) {
   const showStale = stale && !dismissed;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white">
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="flex h-14 items-center justify-between gap-6 px-6">
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-2"
+          className="group flex shrink-0 items-center gap-2.5"
           aria-label="progbase home"
         >
-          <span
-            aria-hidden
-            className="block h-2.5 w-2.5 rotate-45 rounded-[2px] bg-indigo-600 transition-transform duration-300 group-hover:rotate-[225deg]"
+          <Image
+            src={logo}
+            alt=""
+            width={24}
+            height={24}
+            priority
+            className="h-6 w-6 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-[10deg] group-hover:scale-110"
           />
-          <span className="font-display text-[18px] font-semibold leading-none tracking-tight text-zinc-900">
+          <span className="font-display text-[19px] font-semibold italic leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
             progbase
           </span>
         </Link>
@@ -50,19 +57,19 @@ export async function Header({ currentPath }: { currentPath: string }) {
                 className={cn(
                   "relative flex h-14 items-center text-[13px] font-medium transition-colors",
                   active
-                    ? "text-zinc-900"
-                    : "text-zinc-500 hover:text-zinc-900",
+                    ? "text-zinc-900 dark:text-zinc-50"
+                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50",
                 )}
               >
                 {item.label}
                 {active && (
-                  <span className="absolute inset-x-0 -bottom-px h-[2px] bg-indigo-600" />
+                  <span className="absolute inset-x-0 -bottom-px h-[2px] bg-violet-600 dark:bg-violet-400" />
                 )}
               </Link>
             );
           })}
         </nav>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           {showStale && days !== null && (
             <form
               action="/api/stale-banner/dismiss"
@@ -75,18 +82,20 @@ export async function Header({ currentPath }: { currentPath: string }) {
               <button
                 type="submit"
                 title="Dismiss for 24h"
-                className="rounded-sm px-1 text-xs text-amber-700 hover:bg-amber-100"
+                className="rounded-sm px-1 text-xs text-amber-700 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40"
               >
                 ×
               </button>
             </form>
           )}
+          <ThemeToggle />
           <UserButton
             appearance={{
               elements: {
-                userButtonAvatarBox: "h-7 w-7 ring-1 ring-zinc-200",
+                userButtonAvatarBox:
+                  "h-7 w-7 ring-1 ring-zinc-200 dark:ring-zinc-700",
                 userButtonTrigger:
-                  "focus:shadow-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+                  "focus:shadow-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
               },
             }}
           />

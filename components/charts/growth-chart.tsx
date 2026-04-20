@@ -9,15 +9,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useChartTheme } from "./use-chart-theme";
 
 export function GrowthChart({
   data,
 }: {
   data: { month: string; cumulative: number }[];
 }) {
+  const t = useChartTheme();
   if (data.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-md bg-zinc-50 text-xs text-zinc-400">
+      <div className="flex h-48 items-center justify-center rounded-md bg-zinc-50 text-xs text-zinc-400 dark:bg-zinc-900 dark:text-zinc-500">
         No data yet
       </div>
     );
@@ -26,27 +28,27 @@ export function GrowthChart({
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+          <CartesianGrid stroke={t.grid} strokeDasharray="3 3" />
           <XAxis
             dataKey="month"
-            stroke="#d4d4d8"
-            tick={{ fill: "#52525b", fontSize: 11 }}
+            stroke={t.axis}
+            tick={{ fill: t.tick, fontSize: 11 }}
           />
-          <YAxis stroke="#d4d4d8" tick={{ fill: "#52525b", fontSize: 11 }} />
+          <YAxis stroke={t.axis} tick={{ fill: t.tick, fontSize: 11 }} />
           <Tooltip
             contentStyle={{
-              background: "#18181b",
+              background: t.tooltipBg,
               border: "none",
               borderRadius: 4,
-              color: "white",
+              color: t.tooltipText,
               fontSize: 12,
             }}
-            labelStyle={{ color: "white" }}
+            labelStyle={{ color: t.tooltipText }}
           />
           <Line
             type="monotone"
             dataKey="cumulative"
-            stroke="#6366f1"
+            stroke={t.accent}
             strokeWidth={2}
             dot={false}
           />

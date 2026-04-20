@@ -9,33 +9,35 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useChartTheme } from "./use-chart-theme";
 
 export function AttendanceChart({
   data,
 }: {
   data: { bucket: string; count: number }[];
 }) {
+  const t = useChartTheme();
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-          <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+          <CartesianGrid stroke={t.grid} strokeDasharray="3 3" />
           <XAxis
             dataKey="bucket"
-            stroke="#d4d4d8"
-            tick={{ fill: "#52525b", fontSize: 11 }}
+            stroke={t.axis}
+            tick={{ fill: t.tick, fontSize: 11 }}
           />
-          <YAxis stroke="#d4d4d8" tick={{ fill: "#52525b", fontSize: 11 }} />
+          <YAxis stroke={t.axis} tick={{ fill: t.tick, fontSize: 11 }} />
           <Tooltip
             contentStyle={{
-              background: "#18181b",
+              background: t.tooltipBg,
               border: "none",
               borderRadius: 4,
-              color: "white",
+              color: t.tooltipText,
               fontSize: 12,
             }}
           />
-          <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="count" fill={t.accent} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
