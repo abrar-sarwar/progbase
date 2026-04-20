@@ -1,0 +1,30 @@
+diff --git a/node_modules/@clerk/nextjs/dist/cjs/package.json b/node_modules/@clerk/nextjs/dist/cjs/package.json
+index b94ce32..dc5ec81 100644
+--- a/node_modules/@clerk/nextjs/dist/cjs/package.json
++++ b/node_modules/@clerk/nextjs/dist/cjs/package.json
+@@ -6,6 +6,10 @@
+       "default": "./components.client.js"
+     },
+     "#safe-node-apis": {
++      "edge-light": "./runtime/browser/safe-node-apis.js",
++      "workerd": "./runtime/browser/safe-node-apis.js",
++      "worker": "./runtime/browser/safe-node-apis.js",
++      "browser": "./runtime/browser/safe-node-apis.js",
+       "node": "./runtime/node/safe-node-apis.js",
+       "default": "./runtime/browser/safe-node-apis.js"
+     }
+diff --git a/node_modules/@clerk/nextjs/dist/esm/package.json b/node_modules/@clerk/nextjs/dist/esm/package.json
+index b94ce32..dc5ec81 100644
+--- a/node_modules/@clerk/nextjs/dist/esm/package.json
++++ b/node_modules/@clerk/nextjs/dist/esm/package.json
+@@ -6,6 +6,10 @@
+       "default": "./components.client.js"
+     },
+     "#safe-node-apis": {
++      "edge-light": "./runtime/browser/safe-node-apis.js",
++      "workerd": "./runtime/browser/safe-node-apis.js",
++      "worker": "./runtime/browser/safe-node-apis.js",
++      "browser": "./runtime/browser/safe-node-apis.js",
+       "node": "./runtime/node/safe-node-apis.js",
+       "default": "./runtime/browser/safe-node-apis.js"
+     }
