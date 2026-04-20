@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { Fraunces, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { cookies, headers } from "next/headers";
-import { requireAuthorized } from "@/lib/auth-guard";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -47,10 +47,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
   const pathname = headers().get("x-pathname") ?? "/";
-  await requireAuthorized(pathname);
   const isPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
-  const showHeader = !isPublic;
+  const showHeader = Boolean(userId) && !isPublic;
 
   const themeCookie = cookies().get("progbase-theme")?.value;
   const isDark = themeCookie === "dark";

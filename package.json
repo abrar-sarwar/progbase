@@ -13,7 +13,7 @@
     "postinstall": "patch-package || node scripts/patch-clerk-edge.mjs"
   },
   "dependencies": {
-    "@clerk/nextjs": "6.39.2",
+    "@clerk/nextjs": "6.12.12",
     "@supabase/supabase-js": "^2.103.3",
     "next": "14.2.35",
     "papaparse": "^5.5.3",
