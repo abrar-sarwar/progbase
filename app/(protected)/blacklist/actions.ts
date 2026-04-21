@@ -78,6 +78,9 @@ export async function addBlacklist(input: {
         field: "hidden",
         old_value: "false",
         new_value: "true",
+        source: "manual",
+        changed_by: editor,
+        import_id: null,
       })),
     );
     if (logErr) {
