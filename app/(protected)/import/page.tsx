@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getLastImport, isStale, staleDays } from "@/lib/freshness";
 import { CsvDropzone } from "@/components/csv-dropzone";
 import { Chip } from "@/components/ui/chip";
@@ -10,17 +11,25 @@ export default async function ImportPage() {
 
   return (
     <main className="mx-auto max-w-xl px-6 py-8">
-      <div className="mb-8">
-        <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
-          Data pipeline
-        </span>
-        <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
-          Import Luma CSV
-        </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-          Upload the latest Luma members export. Existing e-board data —
-          majors, tags, notes — is preserved on every re-import.
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <span className="text-[11px] uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+            Data pipeline
+          </span>
+          <h1 className="mt-1 font-display text-[32px] font-normal leading-none tracking-tight-2 text-zinc-900 dark:text-zinc-50">
+            Import Luma CSV
+          </h1>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+            Upload the latest Luma members export. Existing e-board data —
+            majors, tags, notes — is preserved on every re-import.
+          </p>
+        </div>
+        <Link
+          href="/import/history"
+          className="shrink-0 text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
+        >
+          View recent imports →
+        </Link>
       </div>
 
       <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
