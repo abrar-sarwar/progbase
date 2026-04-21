@@ -14,24 +14,40 @@ analytics, and maintains a blacklist. Not member-facing.
    ```
 
 2. Copy `.env.local.example` to `.env.local` and fill in:
-   - Clerk publishable + secret keys (Google-only social login)
-   - Supabase project URL + `service_role` key
+   - `AUTH_SECRET` — generate with `openssl rand -base64 32`
+   - `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` — Google Cloud Console → APIs &
+     Services → Credentials → your OAuth 2.0 Client ID. The client ID must
+     look like `<digits>-<hash>.apps.googleusercontent.com` (with the dash).
+     In the same OAuth client, under **Authorized redirect URIs**, add
+     `http://localhost:3000/api/auth/callback/google` (and `:3001` as a
+     fallback — Next picks 3001 automatically if 3000 is taken).
+   - Supabase project URL + anon key + `service_role` key
    - `ALLOWED_EMAILS` — comma-separated list of e-board Google emails
 
-3. Customize the Clerk session token. Clerk dashboard → Sessions → Customize
-   session token:
-   ```json
-   { "email": "{{user.primary_email_address}}" }
-   ```
+3. Run the SQL below in Supabase SQL Editor (New query → paste → run).
 
-4. Run the SQL below in Supabase SQL Editor (New query → paste → run).
+4. Create a private Storage bucket named `luma-csv` in Supabase.
 
-5. Create a private Storage bucket named `luma-csv` in Supabase.
+5. `npm run dev` and visit http://localhost:3000 (or 3001 — watch the terminal).
 
-6. `npm run dev` and visit http://localhost:3000.
-
-7. Sign in as an allowlisted e-board member. Go to `/import` and upload the
+6. Sign in as an allowlisted e-board member. Go to `/import` and upload the
    latest Luma members CSV.
+
+## Auth troubleshooting
+
+- **`MissingSecret` in the server log** — `AUTH_SECRET` is unset in
+  `.env.local`. Restart `npm run dev` after adding it; env changes don't
+  hot-reload.
+- **`Error 401: invalid_client` from Google** — `AUTH_GOOGLE_ID` is wrong or
+  mangled. Re-copy it from Google Cloud Console; it must contain a dash
+  between the project number and the hash suffix.
+- **`Error 400: redirect_uri_mismatch`** — the port Next is using isn't in
+  the OAuth client's Authorized redirect URIs. Either add the missing URI
+  (e.g. `http://localhost:3001/api/auth/callback/google`) in Google Cloud
+  Console, or kill the other process holding port 3000 so Next reverts to
+  it. Find it with `lsof -i :3000 -sTCP:LISTEN`.
+- **Signed in but redirected to `/unauthorized`** — your Google email isn't
+  in `ALLOWED_EMAILS`. Add it and restart.
 
 ## Schema
 
@@ -122,7 +138,8 @@ compared lowercase + trimmed. An empty value blocks all users (fail-closed).
 3. Add all env vars from `.env.local.example` under Project Settings →
    Environment Variables.
 4. Deploy.
-5. In Clerk, add your Vercel URL to the allowed redirect origins.
+5. In Google Cloud Console, add `https://<your-vercel-domain>/api/auth/callback/google`
+   to the OAuth client's Authorized redirect URIs.
 
 ## Security
 
@@ -130,7 +147,8 @@ compared lowercase + trimmed. An empty value blocks all users (fail-closed).
   would aid reconnaissance if public.
 - **Do not share the deployed URL publicly.** Access is allowlist-gated but
   hostname leaks still invite brute-force sign-in attempts.
-- Clerk session tokens carry the email claim. The Supabase service-role key
+- NextAuth JWT sessions carry the email claim; allowlist enforcement runs
+  in the `signIn` callback (`auth.config.ts`). The Supabase service-role key
   is server-only and never sent to the browser.
 - CSV uploads land in a private Supabase Storage bucket with service-role
   access only.
