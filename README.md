@@ -51,6 +51,10 @@ analytics, and maintains a blacklist. Not member-facing.
 
 ## Schema
 
+The baseline tables are documented in the SQL block below. When we need to
+evolve the schema, migration files live under `supabase/migrations/` and are
+applied by pasting into the Supabase SQL Editor.
+
 ```sql
 create table members (
   user_api_id text primary key,
@@ -109,6 +113,15 @@ create index blacklist_email_idx on blacklist (lower(email));
 create index luma_imports_uploaded_at_idx on luma_imports (uploaded_at desc);
 create index member_edits_member_idx on member_edits (member_user_api_id, changed_at desc);
 ```
+
+### Migrations
+
+After the baseline is in place, apply migrations in order:
+
+- `supabase/migrations/0002_import_hardening.sql` — adds header-mapping
+  metadata to `luma_imports`, `import_id`/`source`/`changed_by` to
+  `member_edits`, `email_normalized` generated columns to `members` and
+  `blacklist`, and a dry-run flag. Idempotent — safe to re-run.
 
 ## Seeding
 
