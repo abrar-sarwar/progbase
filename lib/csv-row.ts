@@ -1,11 +1,12 @@
 import type { CanonicalField } from "./csv-headers";
+import { parseTags } from "./tags";
 
 export type ParsedRow = {
   user_api_id: string;
   name: string;
   email: string | null;
   first_seen: string | null;
-  tags: string | null;
+  tags: string[] | null;
   event_approved_count: number;
   event_checked_in_count: number;
 };
@@ -69,6 +70,8 @@ export function parseRow(
     return { ok: false, reason: "missing name", email: email ?? undefined };
   }
 
+  const tagsList = parseTags(cleanStr(byCanonical.tags) ?? "");
+
   return {
     ok: true,
     row: {
@@ -76,7 +79,7 @@ export function parseRow(
       name,
       email,
       first_seen: cleanDate(byCanonical.first_seen),
-      tags: cleanStr(byCanonical.tags),
+      tags: tagsList.length ? tagsList : null,
       event_approved_count: cleanInt(byCanonical.event_approved_count),
       event_checked_in_count: cleanInt(byCanonical.event_checked_in_count),
     },

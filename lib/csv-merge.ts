@@ -5,7 +5,7 @@ export type LumaWriteSet = {
   name: string;
   email: string | null;
   first_seen: string | null;
-  tags: string | null;
+  tags: string[] | null;
   event_approved_count: number;
   event_checked_in_count: number;
 };
@@ -14,8 +14,8 @@ export type ExistingLuma = Partial<LumaWriteSet> & { user_api_id?: string };
 
 export type FieldDiff = {
   field: Exclude<keyof LumaWriteSet, "user_api_id">;
-  old: string | number | null;
-  new: string | number | null;
+  old: string | number | string[] | null;
+  new: string | number | string[] | null;
 };
 
 function maxNum(a: number | null | undefined, b: number | null | undefined): number {
@@ -77,15 +77,18 @@ export function mergeLumaFields(
   const diffs: FieldDiff[] = [];
   for (const f of DIFFABLE_FIELDS) {
     const oldVal = (e as Record<string, unknown>)[f];
-    let oldNorm: string | number | null;
+    let oldNorm: string | number | string[] | null;
     if (oldVal === undefined) {
-      // Treat missing numeric fields as 0, missing string fields as null
+      // Treat missing numeric fields as 0, missing other fields as null
       oldNorm = COUNT_FIELDS.has(f) ? 0 : null;
     } else {
-      oldNorm = oldVal as string | number | null;
+      oldNorm = oldVal as string | number | string[] | null;
     }
-    const newNorm = merged[f] as string | number | null;
-    if (oldNorm !== newNorm) {
+    const newNorm = merged[f] as string | number | string[] | null;
+    // Order-sensitive JSON.stringify equality — matches the manual-edit
+    // convention in app/_actions/members.ts and handles arrays (tags) the
+    // same way as scalars without a per-field branch.
+    if (JSON.stringify(oldNorm) !== JSON.stringify(newNorm)) {
       diffs.push({ field: f, old: oldNorm, new: newNorm });
     }
   }

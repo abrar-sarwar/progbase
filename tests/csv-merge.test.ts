@@ -80,11 +80,11 @@ describe("mergeLumaFields", () => {
 
   it("string fields prefer incoming non-null", () => {
     const { merged } = mergeLumaFields(
-      row({ name: "New Name", tags: "vip" }),
-      { user_api_id: "u1", name: "Old Name", tags: "regular" },
+      row({ name: "New Name", tags: ["vip"] }),
+      { user_api_id: "u1", name: "Old Name", tags: ["regular"] },
     );
     expect(merged.name).toBe("New Name");
-    expect(merged.tags).toBe("vip");
+    expect(merged.tags).toEqual(["vip"]);
   });
 
   it("string fields keep existing when incoming is null", () => {
@@ -93,10 +93,10 @@ describe("mergeLumaFields", () => {
       {
         user_api_id: "u1",
         name: "N",
-        tags: "keep-me",
+        tags: ["keep-me"],
       },
     );
-    expect(merged.tags).toBe("keep-me");
+    expect(merged.tags).toEqual(["keep-me"]);
   });
 
   it("merged write-set never contains editable fields", () => {

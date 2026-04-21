@@ -35,7 +35,7 @@ describe("parseRow", () => {
       name: "Alice Smith",
       email: "alice@gsu.edu",
       first_seen: "2025-09-01T10:00:00.000Z",
-      tags: "newbie",
+      tags: ["newbie"],
       event_approved_count: 3,
       event_checked_in_count: 2,
     });

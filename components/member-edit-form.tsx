@@ -8,6 +8,7 @@ import { Input, Select, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { updateMember, blockMember } from "@/app/_actions/members";
+import { parseTags } from "@/lib/tags";
 
 const PRESET_GENDER_OPTIONS = [
   "Male",
@@ -15,20 +16,6 @@ const PRESET_GENDER_OPTIONS = [
   "Non-binary",
   "Prefer not to say",
 ];
-
-function parseTags(raw: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const part of raw.split(",")) {
-    const t = part.trim();
-    if (!t) continue;
-    const key = t.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(t);
-  }
-  return out;
-}
 
 export function MemberEditForm({ member }: { member: Member }) {
   const router = useRouter();
