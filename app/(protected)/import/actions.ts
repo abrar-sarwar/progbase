@@ -193,6 +193,12 @@ export async function importCsv(
     .select("id")
     .single();
   if (impErr || !imp) {
+    if (!dryRun) {
+      // Best-effort cleanup: if we uploaded the CSV above and couldn't record
+      // the import, delete the orphaned storage object so the bucket doesn't
+      // collect unreferenced files over time.
+      await supabaseServer.storage.from("luma-csv").remove([storage]).catch(() => {});
+    }
     return {
       ok: false,
       message: `Import log failed: ${impErr?.message ?? "no id returned"}`,
@@ -200,6 +206,12 @@ export async function importCsv(
   }
   const importId = (imp as { id: string }).id;
 
+  // NOTE: member upsert and member_edits insert are not atomic at the DB layer
+  // (Supabase JS doesn't expose a transaction). If the upsert succeeds but the
+  // audit insert fails, members are updated without an audit row. Acceptable
+  // risk for this internal tool — on retry the classifier will see the
+  // already-applied state as unchanged, so the missed audit rows stay missed.
+  // Fixing properly would require a Postgres RPC with BEGIN/COMMIT.
   try {
     if (!dryRun) {
       // Upsert. Payload contains ONLY Luma-owned columns + user_api_id, so
@@ -284,11 +296,12 @@ export async function importCsv(
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    const finalErrors = [...errors, { row: 0, reason: msg } as ImportError];
     await supabaseServer
       .from("luma_imports")
       .update({
-        error_count: parsed.data.length,
-        errors: [{ row: 0, reason: msg }],
+        error_count: finalErrors.length,
+        errors: finalErrors,
         status: "failed",
       })
       .eq("id", importId);
