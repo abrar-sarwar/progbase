@@ -4,7 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
-const NAV = [
+type NavItem = {
+  href: string;
+  label: string;
+  disabled?: boolean;
+  tag?: string;
+};
+
+const NAV: NavItem[] = [
+  { href: "/events", label: "Events", disabled: true, tag: "in the works" },
   { href: "/", label: "Members" },
   { href: "/eboard", label: "E-board" },
   { href: "/analytics", label: "Analytics" },
@@ -17,6 +25,22 @@ export function NavLinks() {
   return (
     <nav className="hidden items-center gap-6 md:flex">
       {NAV.map((item) => {
+        if (item.disabled) {
+          return (
+            <span
+              key={item.href}
+              aria-disabled="true"
+              className="relative flex h-14 items-center gap-1.5 text-[13px] font-medium text-zinc-400 dark:text-zinc-500"
+            >
+              {item.label}
+              {item.tag && (
+                <span className="text-[10px] font-normal italic text-zinc-400 dark:text-zinc-500">
+                  ({item.tag})
+                </span>
+              )}
+            </span>
+          );
+        }
         const active =
           item.href === "/"
             ? pathname === "/"
