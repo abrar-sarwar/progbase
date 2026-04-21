@@ -5,15 +5,19 @@ import { formatDate } from "@/lib/format";
 import { isEboard } from "@/lib/eboard";
 import { listEboardEntries, toEntry } from "@/lib/eboard-db";
 import { Chip } from "@/components/ui/chip";
+import { listMemberEdits } from "@/lib/member-edits";
+import type { MemberEdit } from "@/lib/types";
 
 export default async function MemberEditPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const [member, eboardRows] = await Promise.all([
-    getMember(decodeURIComponent(params.id)),
+  const memberApiId = decodeURIComponent(params.id);
+  const [member, eboardRows, edits] = await Promise.all([
+    getMember(memberApiId),
     listEboardEntries(),
+    listMemberEdits(memberApiId, 20),
   ]);
   if (!member) notFound();
   const eboardEntries = eboardRows.map(toEntry);
@@ -78,6 +82,74 @@ export default async function MemberEditPage({
           </dl>
         </aside>
       </div>
+      <ChangeHistory edits={edits} />
     </main>
+  );
+}
+
+function ChangeHistory({ edits }: { edits: MemberEdit[] }) {
+  if (edits.length === 0) {
+    return (
+      <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          Change history
+        </h2>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          No changes logged yet.
+        </p>
+      </section>
+    );
+  }
+  return (
+    <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <h2 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+        Change history
+      </h2>
+      <table className="w-full text-xs">
+        <thead className="text-zinc-500 dark:text-zinc-400">
+          <tr>
+            <th className="py-1 pr-3 text-left font-medium">When</th>
+            <th className="py-1 pr-3 text-left font-medium">Source</th>
+            <th className="py-1 pr-3 text-left font-medium">Who</th>
+            <th className="py-1 pr-3 text-left font-medium">Field</th>
+            <th className="py-1 pr-3 text-left font-medium">Old</th>
+            <th className="py-1 text-left font-medium">New</th>
+          </tr>
+        </thead>
+        <tbody>
+          {edits.map((e) => (
+            <tr
+              key={e.id}
+              className="border-t border-zinc-100 dark:border-zinc-800"
+            >
+              <td className="py-1 pr-3 font-mono tabular-nums text-zinc-700 dark:text-zinc-300">
+                {new Date(e.changed_at).toLocaleString()}
+              </td>
+              <td className="py-1 pr-3">
+                <span
+                  className={
+                    e.source === "import"
+                      ? "text-violet-600 dark:text-violet-400"
+                      : "text-zinc-700 dark:text-zinc-300"
+                  }
+                >
+                  {e.source}
+                </span>
+              </td>
+              <td className="py-1 pr-3 font-mono text-zinc-600 dark:text-zinc-400">
+                {e.changed_by ?? e.editor_email}
+              </td>
+              <td className="py-1 pr-3 font-mono">{e.field}</td>
+              <td className="py-1 pr-3 font-mono text-zinc-600 dark:text-zinc-400">
+                {e.old_value ?? "—"}
+              </td>
+              <td className="py-1 font-mono text-zinc-900 dark:text-zinc-100">
+                {e.new_value ?? "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
