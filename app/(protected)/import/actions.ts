@@ -3,22 +3,39 @@
 import { auth } from "@/auth";
 import { supabaseServer } from "@/lib/supabase-server";
 import { isAllowed } from "@/lib/allowlist";
-import { parseLumaCsv, type ParseError } from "@/lib/csv";
+import { mapHeaders } from "@/lib/csv-headers";
+import { parseRow, type ParsedRow } from "@/lib/csv-row";
+import {
+  mergeLumaFields,
+  type LumaWriteSet,
+  type FieldDiff,
+} from "@/lib/csv-merge";
 import { revalidatePath } from "next/cache";
+import Papa from "papaparse";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
-export type ImportResult = {
-  ok: boolean;
-  newCount: number;
-  updatedCount: number;
-  blockedCount: number;
-  errorCount: number;
-  rowCount: number;
-  errors: ParseError[];
-  missing?: string[];
-  message?: string;
-};
+export type ImportError = { row: number; reason: string; email?: string };
+
+export type ImportResult =
+  | {
+      ok: true;
+      import_id: string;
+      dry_run: boolean;
+      new_count: number;
+      updated_count: number;
+      unchanged_count: number;
+      blocked_count: number;
+      error_count: number;
+      unmapped_headers: string[];
+      header_mapping: Record<string, string>;
+      errors: ImportError[];
+    }
+  | {
+      ok: false;
+      message: string;
+      missing_required?: string[];
+    };
 
 async function requireEditorEmail(): Promise<string> {
   const session = await auth();
@@ -39,168 +56,242 @@ function storagePath(): string {
   return `${stamp}.csv`;
 }
 
-function emptyResult(overrides: Partial<ImportResult>): ImportResult {
-  return {
-    ok: false,
-    newCount: 0,
-    updatedCount: 0,
-    blockedCount: 0,
-    errorCount: 0,
-    rowCount: 0,
-    errors: [],
-    ...overrides,
-  };
-}
-
-export async function importCsv(formData: FormData): Promise<ImportResult> {
+export async function importCsv(
+  formData: FormData,
+  dryRun: boolean = false,
+): Promise<ImportResult> {
   const editor = await requireEditorEmail();
+
   const file = formData.get("file");
-  if (!(file instanceof File)) {
-    return emptyResult({ ok: false, message: "No file provided" });
-  }
-  if (file.size === 0) {
-    return emptyResult({ ok: false, message: "File is empty" });
-  }
+  if (!(file instanceof File)) return { ok: false, message: "No file provided" };
+  if (file.size === 0) return { ok: false, message: "File is empty" };
   if (file.size > MAX_BYTES) {
-    return emptyResult({ ok: false, message: "File exceeds 10 MB limit" });
+    return { ok: false, message: "File exceeds 10 MB limit" };
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const parsed = parseLumaCsv(buffer);
+  let text = buffer.toString("utf-8");
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
 
-  if (!parsed.ok) {
-    return emptyResult({
+  const parsed = Papa.parse<Record<string, string>>(text, {
+    header: true,
+    skipEmptyLines: "greedy",
+    transformHeader: (h) => h,
+  });
+
+  const rawHeaders = parsed.meta.fields ?? [];
+  const { mapping, unmapped, missingRequired } = mapHeaders(rawHeaders);
+  if (missingRequired.length > 0) {
+    return {
       ok: false,
-      message: `Missing required columns: ${parsed.missing.join(", ")}`,
-      missing: parsed.missing,
-    });
+      message: `Missing required column(s): ${missingRequired.join(", ")}`,
+      missing_required: missingRequired,
+    };
   }
 
-  const path = storagePath();
-  const { error: upErr } = await supabaseServer.storage
-    .from("luma-csv")
-    .upload(path, buffer, { contentType: "text/csv" });
-  if (upErr) {
-    return emptyResult({
-      ok: false,
-      message: `Storage upload failed: ${upErr.message}`,
-    });
-  }
-
-  // Blacklist: the table is small (handful of banned emails) so fetch it
-  // entirely and build a local Set. Avoids URL-length errors that happen
-  // when we pass hundreds of emails through .in() in a GET query string.
+  // Load blacklist (normalized emails).
   const blockedSet = new Set<string>();
   {
     const { data: blRows, error: blErr } = await supabaseServer
       .from("blacklist")
-      .select("email");
+      .select("email_normalized");
     if (blErr) {
-      console.error("[importCsv] blacklist select failed:", blErr);
-      return emptyResult({
-        ok: false,
-        message: `Blacklist check failed: ${blErr.message}`,
-      });
+      return { ok: false, message: `Blacklist check failed: ${blErr.message}` };
     }
-    for (const r of blRows ?? [])
-      blockedSet.add((r.email as string).trim().toLowerCase());
+    for (const r of blRows ?? []) {
+      const v = (r as { email_normalized: string | null }).email_normalized;
+      if (v) blockedSet.add(v);
+    }
   }
 
-  const toUpsert: typeof parsed.rows = [];
+  // Parse + classify rows (in-memory, pre-write).
+  const errors: ImportError[] = [];
+  const parsedRows = new Map<string, ParsedRow>(); // dedupe by user_api_id; last wins
   let blockedCount = 0;
-  for (const r of parsed.rows) {
-    const k = (r.email ?? "").trim().toLowerCase();
-    if (k && blockedSet.has(k)) {
-      blockedCount++;
-      continue;
+
+  parsed.data.forEach((raw, idx) => {
+    const rowNum = idx + 2; // +1 for header row, +1 for 1-indexing
+    const res = parseRow(raw as Record<string, string | undefined>, mapping);
+    if (!res.ok) {
+      errors.push({ row: rowNum, reason: res.reason, email: res.email });
+      return;
     }
-    toUpsert.push(r);
-  }
+    const emailKey = res.row.email;
+    if (emailKey && blockedSet.has(emailKey)) {
+      blockedCount++;
+      return;
+    }
+    parsedRows.set(res.row.user_api_id, res.row);
+  });
 
-  let newCount = 0;
-  let updatedCount = 0;
-  if (toUpsert.length > 0) {
-    const ids = toUpsert.map((r) => r.user_api_id);
-
-    // Chunk the existing-ids check to keep each GET query string under the
-    // PostgREST URL-length limit (empirically safe at 200/chunk).
+  // Fetch existing members for the user_api_ids we're about to touch.
+  const ids = Array.from(parsedRows.keys());
+  const existingMap = new Map<string, Record<string, unknown>>();
+  if (ids.length > 0) {
+    const LUMA_COLS =
+      "user_api_id, name, email, first_seen, tags, event_approved_count, event_checked_in_count, membership_name, membership_status";
     const CHUNK = 200;
-    const existingIds = new Set<string>();
     for (let i = 0; i < ids.length; i += CHUNK) {
       const chunk = ids.slice(i, i + CHUNK);
-      const { data: existingRows, error: selErr } = await supabaseServer
+      const { data, error } = await supabaseServer
         .from("members")
-        .select("user_api_id")
+        .select(LUMA_COLS)
         .in("user_api_id", chunk);
-      if (selErr) {
-        console.error("[importCsv] existing-row select failed:", selErr);
-        return emptyResult({
+      if (error) {
+        return {
           ok: false,
-          message: `Existing-row check failed: ${selErr.message}`,
-        });
+          message: `Existing-row check failed: ${error.message}`,
+        };
       }
-      for (const r of existingRows ?? [])
-        existingIds.add(r.user_api_id as string);
-    }
-    for (const r of toUpsert) {
-      if (existingIds.has(r.user_api_id)) updatedCount++;
-      else newCount++;
-    }
-
-    const { error: upsertErr } = await supabaseServer
-      .from("members")
-      .upsert(toUpsert, { onConflict: "user_api_id" });
-    if (upsertErr) {
-      console.error("[importCsv] upsert failed:", upsertErr);
-      return emptyResult({
-        ok: false,
-        message: `Upsert failed: ${upsertErr.message}`,
-      });
+      for (const r of data ?? [])
+        existingMap.set((r as { user_api_id: string }).user_api_id, r as Record<string, unknown>);
     }
   }
 
-  const errorCount = parsed.errors.length;
-  const status: "success" | "partial" | "failed" =
-    errorCount === 0
-      ? "success"
-      : newCount + updatedCount > 0
-        ? "partial"
-        : "failed";
+  // Merge incoming against existing; classify as new | updated | unchanged.
+  const newRows: LumaWriteSet[] = [];
+  const updatedRows: { write: LumaWriteSet; diffs: FieldDiff[] }[] = [];
+  let unchangedCount = 0;
+  for (const [id, incoming] of parsedRows) {
+    const existing = existingMap.get(id) ?? null;
+    const { merged, diffs } = mergeLumaFields(incoming, existing);
+    if (!existing) {
+      newRows.push(merged);
+    } else if (diffs.length > 0) {
+      updatedRows.push({ write: merged, diffs });
+    } else {
+      unchangedCount++;
+    }
+  }
 
-  const { error: logErr } = await supabaseServer.from("luma_imports").insert({
-    uploaded_by: editor,
-    storage_path: path,
-    row_count: parsed.rows.length,
-    new_count: newCount,
-    updated_count: updatedCount,
-    blocked_count: blockedCount,
-    error_count: errorCount,
-    status,
-  });
-  if (logErr) {
+  // Upload the raw CSV so we can replay later (skip on dry-run).
+  const storage = dryRun ? "(dry-run)" : storagePath();
+  if (!dryRun) {
+    const { error: upErr } = await supabaseServer.storage
+      .from("luma-csv")
+      .upload(storage, buffer, { contentType: "text/csv" });
+    if (upErr) {
+      return { ok: false, message: `Storage upload failed: ${upErr.message}` };
+    }
+  }
+
+  // Insert luma_imports row up-front so we have an id to reference from
+  // member_edits. Leave counts null; patch at the end.
+  const { data: imp, error: impErr } = await supabaseServer
+    .from("luma_imports")
+    .insert({
+      uploaded_by: editor,
+      storage_path: storage,
+      filename: file.name,
+      file_size_bytes: file.size,
+      row_count: parsed.data.length,
+      status: "success",
+      header_mapping: mapping,
+      unmapped_headers: unmapped,
+      dry_run: dryRun,
+    })
+    .select("id")
+    .single();
+  if (impErr || !imp) {
     return {
       ok: false,
-      newCount,
-      updatedCount,
-      blockedCount,
-      errorCount,
-      rowCount: parsed.rows.length,
-      errors: parsed.errors,
-      message: `Import succeeded but logging failed: ${logErr.message}`,
+      message: `Import log failed: ${impErr?.message ?? "no id returned"}`,
     };
   }
+  const importId = (imp as { id: string }).id;
 
-  revalidatePath("/");
-  revalidatePath("/analytics");
-  revalidatePath("/import");
+  try {
+    if (!dryRun) {
+      // Upsert. Payload contains ONLY Luma-owned columns + user_api_id, so
+      // editable fields (description, major, tags[], hidden, updated_by)
+      // are never part of the onConflict overwrite set.
+      const allWrites = [...newRows, ...updatedRows.map((u) => u.write)];
+      if (allWrites.length > 0) {
+        const nowIso = new Date().toISOString();
+        const payload = allWrites.map((r) => ({ ...r, updated_at: nowIso }));
+        const { error: upsertErr } = await supabaseServer
+          .from("members")
+          .upsert(payload, { onConflict: "user_api_id" });
+        if (upsertErr) throw new Error(`Upsert failed: ${upsertErr.message}`);
+      }
 
-  return {
-    ok: true,
-    newCount,
-    updatedCount,
-    blockedCount,
-    errorCount,
-    rowCount: parsed.rows.length,
-    errors: parsed.errors,
-  };
+      // One member_edits row per changed field, per updated member.
+      if (updatedRows.length > 0) {
+        const editRows: Record<string, unknown>[] = [];
+        for (const u of updatedRows) {
+          for (const d of u.diffs) {
+            editRows.push({
+              member_user_api_id: u.write.user_api_id,
+              editor_email: editor,
+              field: d.field,
+              old_value: d.old === null ? null : String(d.old),
+              new_value: d.new === null ? null : String(d.new),
+              source: "import",
+              import_id: importId,
+              changed_by: editor,
+            });
+          }
+        }
+        if (editRows.length > 0) {
+          const { error: eErr } = await supabaseServer
+            .from("member_edits")
+            .insert(editRows);
+          if (eErr) throw new Error(`Edit log failed: ${eErr.message}`);
+        }
+      }
+    }
+
+    const newCount = newRows.length;
+    const updatedCount = updatedRows.length;
+    const errorCount = errors.length;
+    const wroteAnything = newCount + updatedCount + unchangedCount > 0;
+    const status: "success" | "partial" | "failed" =
+      errorCount === 0 ? "success" : wroteAnything ? "partial" : "failed";
+
+    const { error: patchErr } = await supabaseServer
+      .from("luma_imports")
+      .update({
+        new_count: newCount,
+        updated_count: updatedCount,
+        unchanged_count: unchangedCount,
+        blocked_count: blockedCount,
+        error_count: errorCount,
+        errors,
+        status,
+      })
+      .eq("id", importId);
+    if (patchErr) {
+      console.error("[importCsv] counts patch failed:", patchErr);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/analytics");
+    revalidatePath("/import");
+    revalidatePath("/import/history");
+
+    return {
+      ok: true,
+      import_id: importId,
+      dry_run: dryRun,
+      new_count: newCount,
+      updated_count: updatedCount,
+      unchanged_count: unchangedCount,
+      blocked_count: blockedCount,
+      error_count: errorCount,
+      unmapped_headers: unmapped,
+      header_mapping: mapping,
+      errors,
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await supabaseServer
+      .from("luma_imports")
+      .update({
+        error_count: parsed.data.length,
+        errors: [{ row: 0, reason: msg }],
+        status: "failed",
+      })
+      .eq("id", importId);
+    throw new Error(`Import failed: ${msg}`);
+  }
 }
