@@ -129,7 +129,7 @@ export async function importCsv(
   const existingMap = new Map<string, Record<string, unknown>>();
   if (ids.length > 0) {
     const LUMA_COLS =
-      "user_api_id, name, email, first_seen, tags, event_approved_count, event_checked_in_count, membership_name, membership_status";
+      "user_api_id, name, email, first_seen, tags, event_approved_count, event_checked_in_count";
     const CHUNK = 200;
     for (let i = 0; i < ids.length; i += CHUNK) {
       const chunk = ids.slice(i, i + CHUNK);

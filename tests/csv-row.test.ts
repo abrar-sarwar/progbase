@@ -12,8 +12,6 @@ const fullMapping: Record<string, CanonicalField> = {
   tags: "tags",
   event_approved_count: "event_approved_count",
   event_checked_in_count: "event_checked_in_count",
-  membership_name: "membership_name",
-  membership_status: "membership_status",
 };
 
 describe("parseRow", () => {
@@ -27,8 +25,6 @@ describe("parseRow", () => {
         tags: "newbie",
         event_approved_count: "3",
         event_checked_in_count: "2",
-        membership_name: "Pro",
-        membership_status: "Approved",
       },
       fullMapping,
     );
@@ -42,8 +38,6 @@ describe("parseRow", () => {
       tags: "newbie",
       event_approved_count: 3,
       event_checked_in_count: 2,
-      membership_name: "Pro",
-      membership_status: "approved",
     });
   });
 

@@ -8,8 +8,6 @@ export type ParsedRow = {
   tags: string | null;
   event_approved_count: number;
   event_checked_in_count: number;
-  membership_name: string | null;
-  membership_status: string | null;
 };
 
 export type ParseRowResult =
@@ -71,8 +69,6 @@ export function parseRow(
     return { ok: false, reason: "missing name", email: email ?? undefined };
   }
 
-  const statusRaw = cleanStr(byCanonical.membership_status);
-
   return {
     ok: true,
     row: {
@@ -83,8 +79,6 @@ export function parseRow(
       tags: cleanStr(byCanonical.tags),
       event_approved_count: cleanInt(byCanonical.event_approved_count),
       event_checked_in_count: cleanInt(byCanonical.event_checked_in_count),
-      membership_name: cleanStr(byCanonical.membership_name),
-      membership_status: statusRaw ? statusRaw.toLowerCase() : null,
     },
   };
 }

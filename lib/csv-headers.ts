@@ -7,9 +7,7 @@ export type CanonicalField =
   | "first_seen"
   | "tags"
   | "event_approved_count"
-  | "event_checked_in_count"
-  | "membership_name"
-  | "membership_status";
+  | "event_checked_in_count";
 
 const ALIASES: Record<CanonicalField, readonly string[]> = {
   user_api_id: ["user_api_id", "api_id", "luma_id", "user_id", "id"],
@@ -44,8 +42,6 @@ const ALIASES: Record<CanonicalField, readonly string[]> = {
     "attended",
     "attendance",
   ],
-  membership_name: ["membership_name", "membership", "plan", "tier"],
-  membership_status: ["membership_status", "status", "member_status"],
 };
 
 const REQUIRED: readonly CanonicalField[] = ["user_api_id", "name", "email"];

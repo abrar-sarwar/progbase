@@ -8,8 +8,6 @@ export type LumaWriteSet = {
   tags: string | null;
   event_approved_count: number;
   event_checked_in_count: number;
-  membership_name: string | null;
-  membership_status: string | null;
 };
 
 export type ExistingLuma = Partial<LumaWriteSet> & { user_api_id?: string };
@@ -48,8 +46,6 @@ const DIFFABLE_FIELDS: readonly FieldDiff["field"][] = [
   "tags",
   "event_approved_count",
   "event_checked_in_count",
-  "membership_name",
-  "membership_status",
 ];
 
 export function mergeLumaFields(
@@ -70,11 +66,6 @@ export function mergeLumaFields(
     event_checked_in_count: maxNum(
       incoming.event_checked_in_count,
       e.event_checked_in_count,
-    ),
-    membership_name: preferIncoming(incoming.membership_name, e.membership_name),
-    membership_status: preferIncoming(
-      incoming.membership_status,
-      e.membership_status,
     ),
   };
 

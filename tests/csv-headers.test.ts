@@ -11,8 +11,6 @@ describe("mapHeaders", () => {
       "tags",
       "event_approved_count",
       "event_checked_in_count",
-      "membership_name",
-      "membership_status",
     ]);
     expect(res.missingRequired).toEqual([]);
     expect(res.unmapped).toEqual([]);
@@ -24,8 +22,6 @@ describe("mapHeaders", () => {
       tags: "tags",
       event_approved_count: "event_approved_count",
       event_checked_in_count: "event_checked_in_count",
-      membership_name: "membership_name",
-      membership_status: "membership_status",
     });
   });
 
@@ -46,8 +42,6 @@ describe("mapHeaders", () => {
       "labels",
       "rsvp_count",
       "checkins",
-      "plan",
-      "status",
     ]);
     expect(res.missingRequired).toEqual([]);
     expect(res.mapping["api_id"]).toBe("user_api_id");
@@ -57,8 +51,6 @@ describe("mapHeaders", () => {
     expect(res.mapping["labels"]).toBe("tags");
     expect(res.mapping["rsvp_count"]).toBe("event_approved_count");
     expect(res.mapping["checkins"]).toBe("event_checked_in_count");
-    expect(res.mapping["plan"]).toBe("membership_name");
-    expect(res.mapping["status"]).toBe("membership_status");
   });
 
   it("is insensitive to column order", () => {

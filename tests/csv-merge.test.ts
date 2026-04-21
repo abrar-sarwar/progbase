@@ -11,8 +11,6 @@ function row(overrides: Partial<ParsedRow> = {}): ParsedRow {
     tags: null,
     event_approved_count: 0,
     event_checked_in_count: 0,
-    membership_name: null,
-    membership_status: null,
     ...overrides,
   };
 }
@@ -91,16 +89,14 @@ describe("mergeLumaFields", () => {
 
   it("string fields keep existing when incoming is null", () => {
     const { merged } = mergeLumaFields(
-      row({ name: "N", tags: null, membership_name: null }),
+      row({ name: "N", tags: null }),
       {
         user_api_id: "u1",
         name: "N",
         tags: "keep-me",
-        membership_name: "Pro",
       },
     );
     expect(merged.tags).toBe("keep-me");
-    expect(merged.membership_name).toBe("Pro");
   });
 
   it("merged write-set never contains editable fields", () => {
@@ -135,8 +131,6 @@ describe("mergeLumaFields", () => {
       tags: null,
       event_approved_count: 5,
       event_checked_in_count: 3,
-      membership_name: null,
-      membership_status: null,
     };
     const { diffs } = mergeLumaFields(
       row({
