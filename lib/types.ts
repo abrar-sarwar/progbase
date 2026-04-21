@@ -33,7 +33,33 @@ export type LumaImport = {
   row_count: number | null;
   new_count: number | null;
   updated_count: number | null;
+  unchanged_count: number | null;
   blocked_count: number | null;
   error_count: number | null;
   status: "success" | "partial" | "failed";
+  filename: string | null;
+  file_size_bytes: number | null;
+  header_mapping: Record<string, string> | null;
+  unmapped_headers: string[] | null;
+  errors: ImportErrorRow[] | null;
+  dry_run: boolean;
+};
+
+export type ImportErrorRow = {
+  row: number;
+  reason: string;
+  email?: string;
+};
+
+export type MemberEdit = {
+  id: string;
+  member_user_api_id: string;
+  editor_email: string;
+  field: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_at: string;
+  import_id: string | null;
+  source: "import" | "manual";
+  changed_by: string | null;
 };
