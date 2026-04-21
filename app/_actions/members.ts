@@ -107,6 +107,9 @@ export async function updateMember(
         field: e.field,
         old_value: e.old_value,
         new_value: e.new_value,
+        source: "manual",
+        changed_by: editor,
+        import_id: null,
       })),
     );
     if (logErr) throw new Error(logErr.message);
@@ -163,6 +166,9 @@ export async function blockMember(
       field: "hidden",
       old_value: "false",
       new_value: "true",
+      source: "manual",
+      changed_by: editor,
+      import_id: null,
     });
     if (logErr) throw new Error(logErr.message);
   }
