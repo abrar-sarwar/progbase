@@ -90,6 +90,27 @@ create table member_edits (
   changed_at timestamptz default now()
 );
 
+create table events (
+  luma_event_id text primary key,
+  name text not null,
+  event_date timestamptz,
+  first_imported_at timestamptz default now(),
+  last_imported_at timestamptz default now(),
+  registered_count int default 0,
+  approved_count int default 0,
+  checked_in_count int default 0
+);
+
+create table event_attendance (
+  luma_event_id text not null references events(luma_event_id) on delete cascade,
+  member_user_api_id text not null references members(user_api_id) on delete cascade,
+  guest_api_id text,
+  approval_status text check (approval_status in ('invited','approved','declined')),
+  registered_at timestamptz,
+  checked_in_at timestamptz,
+  primary key (luma_event_id, member_user_api_id)
+);
+
 create index members_email_idx on members (lower(email));
 create index members_name_idx on members (lower(name));
 create index members_checked_in_idx on members (event_checked_in_count desc);
@@ -106,6 +127,10 @@ After the baseline is in place, apply migrations in order:
   metadata to `luma_imports`, `import_id`/`source`/`changed_by` to
   `member_edits`, `email_normalized` generated columns to `members` and
   `blacklist`, and a dry-run flag. Idempotent — safe to re-run.
+- `supabase/migrations/0004_events_and_multi_csv.sql` — adds the
+  `events` + `event_attendance` tables, `members.source`, and
+  `source_type`/`luma_event_id`/`luma_event_name`/`batch_id` columns on
+  `luma_imports`. Idempotent — safe to re-run.
 
 ## Seeding
 
