@@ -17,6 +17,9 @@ export default defineConfig({
       // build-time marker we can safely neutralize. Without this, importing
       // any lib/* module that declares 'import "server-only"' throws.
       "server-only": path.resolve(__dirname, "node_modules/server-only/empty.js"),
+      // Mirror the Next.js `@/*` path alias so tests can import modules the
+      // same way production code does (e.g. `@/lib/csv-format`).
+      "@": path.resolve(__dirname, "."),
     },
   },
 });
