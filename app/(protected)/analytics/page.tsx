@@ -5,6 +5,7 @@ import { AttendanceChart } from "@/components/charts/attendance-chart";
 import { ActiveDormantChart } from "@/components/charts/active-dormant-chart";
 import { EmailDomainChart } from "@/components/charts/email-domain-chart";
 import { DemographicsChart } from "@/components/charts/demographics-chart";
+import { AttendanceOverTimeChart } from "@/components/charts/attendance-over-time";
 
 function pct(x: number): string {
   return `${Math.round(x * 100)}%`;
@@ -81,6 +82,13 @@ export default async function AnalyticsPage() {
           className="md:col-span-2"
         >
           <DemographicsChart data={a.demographics.gender} />
+        </Section>
+        <Section
+          title="Attendance over time"
+          subtitle="Checked-in guests per event, oldest → newest"
+          className="md:col-span-2"
+        >
+          <AttendanceOverTimeChart data={a.attendanceOverTime} />
         </Section>
       </div>
     </main>

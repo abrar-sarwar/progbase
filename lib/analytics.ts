@@ -14,6 +14,7 @@ export type AnalyticsData = {
     gender: { label: string; count: number }[];
     coverage: { major: number; gradYear: number; gender: number };
   };
+  attendanceOverTime: { label: string; date: string | null; checkedIn: number }[];
 };
 
 function bucketForApproved(n: number): string {
@@ -131,6 +132,17 @@ export async function getAnalytics(): Promise<AnalyticsData> {
         : members.filter((m) => fieldFilled(m.gender)).length / total,
   };
 
+  const { data: evts, error: evErr } = await supabaseServer
+    .from("events")
+    .select("luma_event_id, name, event_date, checked_in_count")
+    .order("event_date", { ascending: true, nullsFirst: true });
+  if (evErr) throw new Error(evErr.message);
+  const attendanceOverTime = (evts ?? []).map((e: any) => ({
+    label: e.name,
+    date: e.event_date,
+    checkedIn: e.checked_in_count ?? 0,
+  }));
+
   return {
     total,
     growth,
@@ -138,5 +150,6 @@ export async function getAnalytics(): Promise<AnalyticsData> {
     activeDormant,
     emailDomains,
     demographics: { major, gradYear, gender, coverage },
+    attendanceOverTime,
   };
 }
