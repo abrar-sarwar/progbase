@@ -62,6 +62,17 @@ export default async function ImportDetailPage({
             </span>
           )}
         </p>
+        {imp.source_type === "event" && imp.luma_event_id && (
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Event:{" "}
+            <Link
+              href={`/events/${encodeURIComponent(imp.luma_event_id)}`}
+              className="text-violet-600 hover:text-violet-700"
+            >
+              {imp.luma_event_name ?? imp.luma_event_id}
+            </Link>
+          </p>
+        )}
       </div>
 
       <section className="mb-6 flex flex-wrap gap-1.5">
