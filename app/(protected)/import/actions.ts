@@ -25,9 +25,7 @@ const MAX_BYTES = 10 * 1024 * 1024;
 export type ImportError = { row: number; reason: string; email?: string };
 
 /**
- * Per-file result for the multi-file batch action. The `ok: true` shape is a
- * superset of what the legacy single-file UI reads via `importCsv` — so the
- * backwards-compat shim does not need to translate field names.
+ * Per-file result for the multi-file batch action.
  */
 export type PerFileResult =
   | {
@@ -57,12 +55,6 @@ export type PerFileResult =
       message: string;
       missing_required?: string[];
     };
-
-/**
- * Legacy return type for the single-file wrapper `importCsv`. Kept as an
- * alias of `PerFileResult` so the existing `CsvDropzone` keeps typechecking.
- */
-export type ImportResult = PerFileResult;
 
 export type ImportBatchResult = {
   batch_id: string;
@@ -825,16 +817,4 @@ export async function importCsvBatch(
   revalidatePath("/import/history");
 
   return { batch_id: batchId, files: results };
-}
-
-/**
- * Backwards-compat single-file wrapper. The legacy `CsvDropzone` still calls
- * this; Group C will replace it with `importCsvBatch` + the per-file UI.
- */
-export async function importCsv(
-  formData: FormData,
-  dryRun: boolean = false,
-): Promise<PerFileResult> {
-  const batch = await importCsvBatch(formData, dryRun);
-  return batch.files[0];
 }

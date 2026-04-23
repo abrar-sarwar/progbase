@@ -20,8 +20,9 @@ export default async function ImportPage() {
             Import Luma CSV
           </h1>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-            Upload the latest Luma members export. Existing e-board data —
-            majors, tags, notes — is preserved on every re-import.
+            Upload one or more Luma CSVs. Calendar-subscribed and per-event
+            guest exports are both supported — drop them in together and
+            we&rsquo;ll route each one.
           </p>
         </div>
         <Link
