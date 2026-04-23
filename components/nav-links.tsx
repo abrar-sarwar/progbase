@@ -12,7 +12,7 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
-  { href: "/events", label: "Events", disabled: true, tag: "in the works" },
+  { href: "/events", label: "Events" },
   { href: "/", label: "Members" },
   { href: "/eboard", label: "E-board" },
   { href: "/analytics", label: "Analytics" },
