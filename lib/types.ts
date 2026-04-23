@@ -13,6 +13,7 @@ export type Member = {
   linkedin_url: string | null;
   custom_tags: string[] | null;
   hidden: boolean;
+  source: "subscribed" | "event_only";
   updated_at: string;
   updated_by: string | null;
 };
@@ -43,6 +44,10 @@ export type LumaImport = {
   unmapped_headers: string[] | null;
   errors: ImportErrorRow[] | null;
   dry_run: boolean;
+  source_type: "subscribed" | "event" | null;
+  luma_event_id: string | null;
+  luma_event_name: string | null;
+  batch_id: string | null;
 };
 
 export type ImportErrorRow = {
@@ -62,4 +67,31 @@ export type MemberEdit = {
   import_id: string | null;
   source: "import" | "manual";
   changed_by: string | null;
+};
+
+export type Event = {
+  luma_event_id: string;
+  name: string;
+  event_date: string | null;
+  first_imported_at: string;
+  last_imported_at: string;
+  registered_count: number;
+  approved_count: number;
+  checked_in_count: number;
+};
+
+export type EventAttendance = {
+  luma_event_id: string;
+  member_user_api_id: string;
+  guest_api_id: string | null;
+  approval_status: "invited" | "approved" | "declined";
+  registered_at: string | null;
+  checked_in_at: string | null;
+};
+
+export type EventAttendanceWithMember = EventAttendance & {
+  member: Pick<
+    Member,
+    "user_api_id" | "name" | "email" | "major" | "grad_year"
+  >;
 };
