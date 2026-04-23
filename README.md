@@ -154,19 +154,7 @@ compared lowercase + trimmed. An empty value blocks all users (fail-closed).
 5. In Google Cloud Console, add `https://<your-vercel-domain>/api/auth/callback/google`
    to the OAuth client's Authorized redirect URIs.
 
-## Security
 
-- **Keep this repo private.** It documents how the PII pipeline works and
-  would aid reconnaissance if public.
-- **Do not share the deployed URL publicly.** Access is allowlist-gated but
-  hostname leaks still invite brute-force sign-in attempts.
-- NextAuth JWT sessions carry the email claim; allowlist enforcement runs
-  in the `signIn` callback (`auth.config.ts`). The Supabase service-role key
-  is server-only and never sent to the browser.
-- CSV uploads land in a private Supabase Storage bucket with service-role
-  access only.
-- Member edits are audited in `member_edits` (who changed which field, when,
-  old vs new value). Blocks and blacklist-driven hides are logged too.
 
 ## Tests
 
