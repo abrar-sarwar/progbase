@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMember } from "@/lib/members";
 import { MemberEditForm } from "@/components/member-edit-form";
@@ -6,6 +7,7 @@ import { isEboard } from "@/lib/eboard";
 import { listEboardEntries, toEntry } from "@/lib/eboard-db";
 import { Chip } from "@/components/ui/chip";
 import { listMemberEdits } from "@/lib/member-edits";
+import { listMemberEventHistory } from "@/lib/events";
 import type { MemberEdit } from "@/lib/types";
 
 export default async function MemberEditPage({
@@ -14,10 +16,11 @@ export default async function MemberEditPage({
   params: { id: string };
 }) {
   const memberApiId = decodeURIComponent(params.id);
-  const [member, eboardRows, edits] = await Promise.all([
+  const [member, eboardRows, edits, eventHistory] = await Promise.all([
     getMember(memberApiId),
     listEboardEntries(),
     listMemberEdits(memberApiId, 20),
+    listMemberEventHistory(memberApiId),
   ]);
   if (!member) notFound();
   const eboardEntries = eboardRows.map(toEntry);
@@ -83,7 +86,57 @@ export default async function MemberEditPage({
         </aside>
       </div>
       <ChangeHistory edits={edits} />
+      <EventHistory eventHistory={eventHistory} />
     </main>
+  );
+}
+
+function EventHistory({
+  eventHistory,
+}: {
+  eventHistory: Awaited<ReturnType<typeof listMemberEventHistory>>;
+}) {
+  if (eventHistory.length === 0) return null;
+  return (
+    <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <h2 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+        Event history ({eventHistory.length})
+      </h2>
+      <table className="w-full text-xs">
+        <thead className="text-zinc-500 dark:text-zinc-400">
+          <tr>
+            <th className="py-1 pr-3 text-left font-medium">Date</th>
+            <th className="py-1 pr-3 text-left font-medium">Event</th>
+            <th className="py-1 pr-3 text-left font-medium">Status</th>
+            <th className="py-1 text-left font-medium">Checked in</th>
+          </tr>
+        </thead>
+        <tbody>
+          {eventHistory.map((e) => (
+            <tr
+              key={e.luma_event_id}
+              className="border-t border-zinc-100 dark:border-zinc-800"
+            >
+              <td className="py-1 pr-3 font-mono tabular-nums text-zinc-700 dark:text-zinc-300">
+                {formatDate(e.event_date)}
+              </td>
+              <td className="py-1 pr-3">
+                <Link
+                  href={`/events/${encodeURIComponent(e.luma_event_id)}`}
+                  className="text-violet-600 hover:text-violet-700"
+                >
+                  {e.name}
+                </Link>
+              </td>
+              <td className="py-1 pr-3">{e.approval_status}</td>
+              <td className="py-1">
+                {e.checked_in_at ? formatDate(e.checked_in_at) : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
 
