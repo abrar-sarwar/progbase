@@ -1,6 +1,11 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseServer } from "./supabase-server";
 import type { EventAttendanceRow } from "./csv-event-row";
+
+export type ImportEventDeps = {
+  db: Pick<SupabaseClient, "from">;
+};
 
 export type EventImportResult = {
   luma_event_id: string;
@@ -38,13 +43,17 @@ function eventNameFromFilename(filename: string | null): string {
   return base.length ? base : "Untitled event";
 }
 
-export async function importEvent(args: {
-  rows: EventAttendanceRow[];
-  filename: string | null;
-  blockedEmails: Set<string>;
-}): Promise<EventImportResult> {
+export async function importEvent(
+  args: {
+    rows: EventAttendanceRow[];
+    filename: string | null;
+    blockedEmails: Set<string>;
+  },
+  deps?: ImportEventDeps,
+): Promise<EventImportResult> {
   const { rows: allRows, filename, blockedEmails } = args;
   if (allRows.length === 0) throw new Error("importEvent: no rows to import");
+  const db = deps?.db ?? supabaseServer;
 
   // All rows must share the same luma_event_id by construction (parser
   // extracts from qr_code_url, and the UI/server won't mix files).
@@ -65,7 +74,7 @@ export async function importEvent(args: {
   const blocked_count = allRows.length - rows.length;
 
   // 1. Is this event already in the DB? (So the UI can show "replacing".)
-  const { data: existingEvent, error: evErr } = await supabaseServer
+  const { data: existingEvent, error: evErr } = await db
     .from("events")
     .select("luma_event_id, name, event_date, first_imported_at")
     .eq("luma_event_id", luma_event_id)
@@ -79,7 +88,7 @@ export async function importEvent(args: {
   const CHUNK = 200;
   for (let i = 0; i < emails.length; i += CHUNK) {
     const chunk = emails.slice(i, i + CHUNK);
-    const { data, error } = await supabaseServer
+    const { data, error } = await db
       .from("members")
       .select("user_api_id, email_normalized")
       .in("email_normalized", chunk);
@@ -115,7 +124,7 @@ export async function importEvent(args: {
     });
   }
   if (toCreate.length > 0) {
-    const { error: insErr } = await supabaseServer
+    const { error: insErr } = await db
       .from("members")
       .upsert(toCreate, { onConflict: "user_api_id" });
     if (insErr) throw new Error(`auto-create members failed: ${insErr.message}`);
@@ -146,13 +155,13 @@ export async function importEvent(args: {
     eventUpsert.event_date = derivedDate;
   }
 
-  const { error: upEvErr } = await supabaseServer
+  const { error: upEvErr } = await db
     .from("events")
     .upsert(eventUpsert, { onConflict: "luma_event_id" });
   if (upEvErr) throw new Error(`event upsert failed: ${upEvErr.message}`);
 
   // 5. Delete existing attendance for this event, then insert fresh.
-  const { error: delErr } = await supabaseServer
+  const { error: delErr } = await db
     .from("event_attendance")
     .delete()
     .eq("luma_event_id", luma_event_id);
@@ -197,7 +206,7 @@ export async function importEvent(args: {
   if (attnRows.length > 0) {
     for (let i = 0; i < attnRows.length; i += 500) {
       const chunk = attnRows.slice(i, i + 500);
-      const { error: insAttnErr } = await supabaseServer
+      const { error: insAttnErr } = await db
         .from("event_attendance")
         .insert(chunk);
       if (insAttnErr) {
@@ -210,7 +219,7 @@ export async function importEvent(args: {
   //    every member we just touched. One UPDATE per column against a
   //    grouped subquery.
   const touched = Array.from(byMember.keys());
-  await recomputeMemberCounters(touched);
+  await recomputeMemberCounters(touched, deps);
 
   return {
     luma_event_id,
@@ -240,15 +249,17 @@ export async function importEvent(args: {
 // in one statement.
 export async function recomputeMemberCounters(
   memberIds: string[],
+  deps?: ImportEventDeps,
 ): Promise<void> {
   if (memberIds.length === 0) return;
+  const db = deps?.db ?? supabaseServer;
   // Pull aggregates from event_attendance, then patch members row-by-row
   // in chunks. Supabase JS doesn't expose a raw UPDATE FROM (SELECT…) so
   // we do it client-side. One query per chunk, not one per member.
   const CHUNK = 200;
   for (let i = 0; i < memberIds.length; i += CHUNK) {
     const chunk = memberIds.slice(i, i + CHUNK);
-    const { data, error } = await supabaseServer
+    const { data, error } = await db
       .from("event_attendance")
       .select("member_user_api_id, approval_status, checked_in_at")
       .in("member_user_api_id", chunk);
@@ -276,7 +287,7 @@ export async function recomputeMemberCounters(
     // chunk. Chunks are bounded by 200 → at most 17 × 419 touches in the
     // largest realistic batch; well within request budgets.
     for (const [id, c] of counts) {
-      const { error: upErr } = await supabaseServer
+      const { error: upErr } = await db
         .from("members")
         .update({
           event_approved_count: c.approved,
