@@ -317,6 +317,66 @@ describe("importEvent", () => {
     expect(bob.event_checked_in_count).toBe(0);
   });
 
+  it("collapses multi-ticket same-email guests to a single member + attendance row", async () => {
+    // Two tickets for the same person in the same event.
+    const res = await importEvent(
+      {
+        rows: [
+          row({
+            email: "alice@x.edu",
+            guest_api_id: "gst-ticket-1",
+            name: "Alice",
+            checked_in_at: "2025-09-02T20:00:00.000Z",
+          }),
+          row({
+            email: "alice@x.edu",
+            guest_api_id: "gst-ticket-2",
+            name: "Alice",
+          }),
+        ],
+        filename: "E.csv",
+        blockedEmails: noBlocked,
+      },
+      { db },
+    );
+    expect(res.auto_created_members).toBe(1);
+    expect(res.touched_members).toBe(1);
+    expect(db._tables.attendance.length).toBe(1);
+    // Exactly one member row for Alice — no orphan.
+    const aliceRows = [...db._tables.members.values()].filter(
+      (m) => (m as any).email === "alice@x.edu",
+    );
+    expect(aliceRows.length).toBe(1);
+    // Event counts match the actual attendance row count.
+    const event = db._tables.events.get("evt-T1") as any;
+    expect(event.approved_count).toBe(1);
+    expect(event.checked_in_count).toBe(1);
+    expect(event.registered_count).toBe(1);
+  });
+
+  it("event counts match attendance rows when a row has no api_id and no existing member", async () => {
+    // Parser ordinarily guarantees api_id, but a synthesized row with no
+    // guest_api_id must not inflate the stored event counts above the
+    // attendance-row count.
+    const res = await importEvent(
+      {
+        rows: [
+          row({ email: "a@x.edu", guest_api_id: "gst-a" }),
+          row({ email: "ghost@x.edu", guest_api_id: null }),
+        ],
+        filename: "E.csv",
+        blockedEmails: noBlocked,
+      },
+      { db },
+    );
+    expect(db._tables.attendance.length).toBe(1);
+    expect(res.approved).toBe(1);
+    expect(res.registered).toBe(1);
+    const event = db._tables.events.get("evt-T1") as any;
+    expect(event.registered_count).toBe(1);
+    expect(event.approved_count).toBe(1);
+  });
+
   it("skips blacklisted emails: no member created, no attendance, counts them as blocked", async () => {
     const blocked = new Set(["blocked@x.edu"]);
     const res = await importEvent(

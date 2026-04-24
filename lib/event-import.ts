@@ -20,7 +20,12 @@ export type EventImportResult = {
   blocked_count: number;
 };
 
-function deriveEventDate(rows: EventAttendanceRow[]): string | null {
+function deriveEventDate(
+  rows: Array<{
+    checked_in_at: string | null;
+    registered_at: string | null;
+  }>,
+): string | null {
   let maxCheckin: string | null = null;
   for (const r of rows) {
     if (r.checked_in_at && (!maxCheckin || r.checked_in_at > maxCheckin)) {
@@ -100,7 +105,10 @@ export async function importEvent(
     }
   }
 
-  // 3. Auto-create members for emails we've never seen.
+  // 3. Auto-create members for emails we've never seen. Dedupe by email —
+  //    one person buying two tickets to the same event shows up as two rows
+  //    with the same email but different api_ids, and we want exactly one
+  //    member row per email.
   const toCreate: {
     user_api_id: string;
     name: string | null;
@@ -108,13 +116,19 @@ export async function importEvent(
     first_seen: string | null;
     source: "event_only";
   }[] = [];
+  const toCreateByEmail = new Map<string, number>(); // email -> index in toCreate
   for (const r of rows) {
     if (memberByEmail.has(r.email)) continue;
-    if (!r.guest_api_id) continue; // defensive; parser sets it from api_id
-    const existingGuestIdAsMember = toCreate.find(
-      (x) => x.user_api_id === r.guest_api_id,
-    );
-    if (existingGuestIdAsMember) continue;
+    if (!r.guest_api_id) continue; // Luma always sets api_id; defensive.
+    const priorIdx = toCreateByEmail.get(r.email);
+    if (priorIdx !== undefined) {
+      // Already queued under a different guest id. Keep the first; if the
+      // later row has a name and the first doesn't, upgrade.
+      const prior = toCreate[priorIdx];
+      if (!prior.name && r.name) prior.name = r.name;
+      continue;
+    }
+    toCreateByEmail.set(r.email, toCreate.length);
     toCreate.push({
       user_api_id: r.guest_api_id,
       name: r.name,
@@ -131,45 +145,11 @@ export async function importEvent(
     for (const c of toCreate) memberByEmail.set(c.email, c.user_api_id);
   }
 
-  // 4. Upsert the event row. Derive event_date from rows; do NOT clobber a
-  //    human-edited event_date on re-import (only set on first import).
-  const derivedDate = deriveEventDate(rows);
-  const eventName = existingEvent?.name ?? eventNameFromFilename(filename);
-  const registered = rows.filter((r) => r.approval_status !== "declined").length;
-  const approved = rows.filter((r) => r.approval_status === "approved").length;
-  const checkedIn = rows.filter((r) => r.checked_in_at !== null).length;
-
-  const eventUpsert: Record<string, unknown> = {
-    luma_event_id,
-    name: eventName,
-    last_imported_at: new Date().toISOString(),
-    registered_count: registered,
-    approved_count: approved,
-    checked_in_count: checkedIn,
-  };
-  if (!existingEvent) {
-    eventUpsert.event_date = derivedDate;
-    eventUpsert.first_imported_at = new Date().toISOString();
-  } else if (existingEvent.event_date === null) {
-    // Only fill event_date from rows if nobody has set it yet.
-    eventUpsert.event_date = derivedDate;
-  }
-
-  const { error: upEvErr } = await db
-    .from("events")
-    .upsert(eventUpsert, { onConflict: "luma_event_id" });
-  if (upEvErr) throw new Error(`event upsert failed: ${upEvErr.message}`);
-
-  // 5. Delete existing attendance for this event, then insert fresh.
-  const { error: delErr } = await db
-    .from("event_attendance")
-    .delete()
-    .eq("luma_event_id", luma_event_id);
-  if (delErr) throw new Error(`attendance clear failed: ${delErr.message}`);
-
-  // Deduplicate by (event, member) — take the row with the latest
-  // checked_in_at, otherwise the latest registered_at, otherwise arbitrary.
-  // This guards against multi-ticket members in the same event.
+  // 4. Dedupe attendance rows by (event, member). Same person with two
+  //    tickets to the same event collapses; we keep the row with the best
+  //    check-in/registration signal. We compute this BEFORE the event
+  //    upsert so the stored event counts match the attendance rows we
+  //    actually insert.
   type Attn = {
     luma_event_id: string;
     member_user_api_id: string;
@@ -181,7 +161,7 @@ export async function importEvent(
   const byMember = new Map<string, Attn>();
   for (const r of rows) {
     const memberId = memberByEmail.get(r.email);
-    if (!memberId) continue; // should be unreachable (we just created them)
+    if (!memberId) continue; // rows with no api_id and no existing member fall here
     const prev = byMember.get(memberId);
     const candidate: Attn = {
       luma_event_id,
@@ -203,6 +183,48 @@ export async function importEvent(
   }
   const attnRows = Array.from(byMember.values());
 
+  // Counts are computed from attnRows — the exact set that lands in
+  // event_attendance — so events.registered_count never drifts from the
+  // row count the detail page recomputes.
+  const derivedDate = deriveEventDate(attnRows);
+  const registered = attnRows.filter(
+    (a) => a.approval_status !== "declined",
+  ).length;
+  const approved = attnRows.filter(
+    (a) => a.approval_status === "approved",
+  ).length;
+  const checkedIn = attnRows.filter((a) => a.checked_in_at !== null).length;
+
+  // 5. Upsert the event row. Do NOT clobber a human-edited event_date on
+  //    re-import (only set on first import or when event_date is null).
+  const eventName = existingEvent?.name ?? eventNameFromFilename(filename);
+  const eventUpsert: Record<string, unknown> = {
+    luma_event_id,
+    name: eventName,
+    last_imported_at: new Date().toISOString(),
+    registered_count: registered,
+    approved_count: approved,
+    checked_in_count: checkedIn,
+  };
+  if (!existingEvent) {
+    eventUpsert.event_date = derivedDate;
+    eventUpsert.first_imported_at = new Date().toISOString();
+  } else if (existingEvent.event_date === null) {
+    eventUpsert.event_date = derivedDate;
+  }
+
+  const { error: upEvErr } = await db
+    .from("events")
+    .upsert(eventUpsert, { onConflict: "luma_event_id" });
+  if (upEvErr) throw new Error(`event upsert failed: ${upEvErr.message}`);
+
+  // 6. Delete existing attendance for this event, then insert fresh.
+  const { error: delErr } = await db
+    .from("event_attendance")
+    .delete()
+    .eq("luma_event_id", luma_event_id);
+  if (delErr) throw new Error(`attendance clear failed: ${delErr.message}`);
+
   if (attnRows.length > 0) {
     for (let i = 0; i < attnRows.length; i += 500) {
       const chunk = attnRows.slice(i, i + 500);
@@ -215,9 +237,8 @@ export async function importEvent(
     }
   }
 
-  // 6. Recompute members.event_approved_count and event_checked_in_count for
-  //    every member we just touched. One UPDATE per column against a
-  //    grouped subquery.
+  // 7. Recompute members.event_approved_count and event_checked_in_count
+  //    for every member we just touched.
   const touched = Array.from(byMember.keys());
   await recomputeMemberCounters(touched, deps);
 
