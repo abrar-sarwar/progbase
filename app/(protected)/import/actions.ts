@@ -64,6 +64,14 @@ export type ImportBatchResult = {
 export type DispatchArgs = {
   filename: string;
   text: string;
+  /**
+   * Raw file bytes for storage upload. Optional so `dispatchOne` tests can
+   * pass only `text` without constructing a Buffer; the real pipeline
+   * always supplies it and the handlers fall back to `Buffer.from(text)`
+   * only when absent.
+   */
+  buffer?: Buffer;
+  fileSize?: number;
   override: "auto" | "subscribed" | "event";
   dryRun: boolean;
   batchId: string;
@@ -728,15 +736,12 @@ export async function importCsvBatch(
 
   const handlers: DispatchHandlers = {
     subscribed: async (a) => {
-      // dispatchOne doesn't carry the raw buffer; re-encode from text for the
-      // storage upload. This round-trip is intentional: keeping dispatchOne
-      // pure (text-only) makes it unit-testable without a File/Buffer shim.
-      const buffer = Buffer.from(a.text, "utf-8");
+      const buffer = a.buffer ?? Buffer.from(a.text, "utf-8");
       return runSubscribedImport({
         text: a.text,
         buffer,
         filename: a.filename,
-        fileSize: buffer.byteLength,
+        fileSize: a.fileSize ?? buffer.byteLength,
         editor: a.editor,
         dryRun: a.dryRun,
         batchId: a.batchId,
@@ -744,12 +749,12 @@ export async function importCsvBatch(
       });
     },
     event: async (a) => {
-      const buffer = Buffer.from(a.text, "utf-8");
+      const buffer = a.buffer ?? Buffer.from(a.text, "utf-8");
       return runEventImport({
         text: a.text,
         buffer,
         filename: a.filename,
-        fileSize: buffer.byteLength,
+        fileSize: a.fileSize ?? buffer.byteLength,
         editor: a.editor,
         dryRun: a.dryRun,
         batchId: a.batchId,
@@ -790,11 +795,13 @@ export async function importCsvBatch(
     }
 
     try {
-      const { text } = await readFile(file);
+      const { text, buffer } = await readFile(file);
       const result = await dispatchOne(
         {
           filename: file.name,
           text,
+          buffer,
+          fileSize: file.size,
           override,
           dryRun,
           batchId,
