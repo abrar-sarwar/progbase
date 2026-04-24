@@ -499,7 +499,7 @@ async function runEventImport(args: {
         new_count: 0,
         updated_count: 0,
         unchanged_count: 0,
-        blocked_count: 0,
+        blocked_count: preParseBlocked,
       })
       .select("id")
       .single();
