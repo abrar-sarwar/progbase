@@ -12,6 +12,7 @@ import {
 } from "@/app/(protected)/import/actions";
 import { detectFormat, type CsvFormat } from "@/lib/csv-format";
 import { useRouter } from "next/navigation";
+import Papa from "papaparse";
 
 type Override = "auto" | "subscribed" | "event";
 
@@ -28,14 +29,20 @@ type State =
   | { kind: "server-result"; batch: ImportBatchResult };
 
 async function sniffHeaders(file: File): Promise<string[]> {
-  // Read the first ~4 KB of the file and parse the first line as
-  // comma-separated headers. Good enough for Luma exports, which keep
-  // the header row short and unquoted.
+  // Read the first ~4 KB of the file and let papaparse do a single-row
+  // parse. Quote-aware, so headers like `"Last, First",email` are read
+  // as two fields and not four. `preview: 1` limits it to the first row
+  // even if our 4 KB slice happened to contain more.
   const slice = file.slice(0, 4096);
   const text = await slice.text();
-  const firstLine = text.split(/\r?\n/, 1)[0] ?? "";
-  if (!firstLine) return [];
-  return firstLine.split(",").map((h) => h.trim());
+  if (!text.trim()) return [];
+  const parsed = Papa.parse<Record<string, string>>(text, {
+    header: true,
+    preview: 1,
+    skipEmptyLines: "greedy",
+    transformHeader: (h) => h,
+  });
+  return parsed.meta.fields ?? [];
 }
 
 export function CsvDropzone() {
