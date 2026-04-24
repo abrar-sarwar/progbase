@@ -7,6 +7,13 @@ function showRate(e: Event): string {
   return `${Math.round((e.checked_in_count / e.approved_count) * 100)}%`;
 }
 
+function invitedCount(e: Event): number {
+  // events.registered_count = invited + approved. Expose invited
+  // separately so the timeline card doesn't double-count approvals
+  // against a "Registered" column.
+  return Math.max(0, e.registered_count - e.approved_count);
+}
+
 export function EventsTimeline({ events }: { events: Event[] }) {
   return (
     <ol className="relative ml-3 border-l border-violet-500/30 dark:border-violet-400/30">
@@ -36,10 +43,10 @@ export function EventsTimeline({ events }: { events: Event[] }) {
               <dl className="flex gap-5 text-right font-mono tabular-nums">
                 <div>
                   <dt className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Registered
+                    Invited
                   </dt>
                   <dd className="text-sm text-zinc-900 dark:text-zinc-50">
-                    {e.registered_count}
+                    {invitedCount(e)}
                   </dd>
                 </div>
                 <div>

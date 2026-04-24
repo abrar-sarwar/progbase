@@ -39,13 +39,14 @@ export default async function AnalyticsPage() {
           </span>
         </div>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Blocked members excluded from all counts.
+          Blocked members excluded from all counts. Members include both
+          calendar-subscribed and auto-created event-only records.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Section
           title="Member growth"
-          subtitle="Cumulative, by month of first Luma event"
+          subtitle="Cumulative, by month first seen in any Luma export"
         >
           <GrowthChart data={a.growth} />
         </Section>
