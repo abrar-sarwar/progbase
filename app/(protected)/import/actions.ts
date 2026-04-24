@@ -201,7 +201,15 @@ async function runSubscribedImport(args: {
     const rowNum = idx + 2; // +1 for header row, +1 for 1-indexing
     const res = parseRow(raw as Record<string, string | undefined>, mapping);
     if (!res.ok) {
-      errors.push({ row: rowNum, reason: res.reason, email: res.email });
+      // If we know the email and it's blacklisted, this row is "blocked"
+      // rather than "errored" — the edit wouldn't have landed either way,
+      // and counting it as an error would noise up the audit.
+      const errEmail = res.email?.toLowerCase();
+      if (errEmail && blockedEmails.has(errEmail)) {
+        blockedCount++;
+      } else {
+        errors.push({ row: rowNum, reason: res.reason, email: res.email });
+      }
       return;
     }
     const emailKey = res.row.email;
@@ -451,11 +459,19 @@ async function runEventImport(args: {
 
   const errors: ImportError[] = [];
   const goodRows: EventAttendanceRow[] = [];
+  let preParseBlocked = 0;
   parsed.data.forEach((raw, idx) => {
     const rowNum = idx + 2;
     const res = parseEventRow(raw as Record<string, string | undefined>);
     if (!res.ok) {
-      errors.push({ row: rowNum, reason: res.reason, email: res.email });
+      // Same logic as the subscribed pipeline: if a parse error has a
+      // blacklisted email, count it as blocked, not errored.
+      const errEmail = res.email?.toLowerCase();
+      if (errEmail && blockedEmails.has(errEmail)) {
+        preParseBlocked++;
+      } else {
+        errors.push({ row: rowNum, reason: res.reason, email: res.email });
+      }
       return;
     }
     goodRows.push(res.row);
@@ -566,7 +582,7 @@ async function runEventImport(args: {
       // Dry-run for event CSVs: don't write event/attendance rows. Report
       // parse-level counts only. blocked_count is computed client-side since
       // importEvent wasn't called.
-      let blockedCount = 0;
+      let blockedCount = preParseBlocked;
       for (const r of goodRows) if (blockedEmails.has(r.email)) blockedCount++;
       const nonBlocked = goodRows.filter((r) => !blockedEmails.has(r.email));
       const registered = nonBlocked.filter(
@@ -623,7 +639,7 @@ async function runEventImport(args: {
       result.touched_members - result.auto_created_members,
     );
     const unchangedCount = 0;
-    const blockedCount = result.blocked_count;
+    const blockedCount = result.blocked_count + preParseBlocked;
     const errorCount = errors.length;
     const wroteAnything = result.touched_members > 0;
     const status: "success" | "partial" | "failed" =

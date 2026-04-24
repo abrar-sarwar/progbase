@@ -78,14 +78,22 @@ export async function importEvent(
   const rows = allRows.filter((r) => !blockedEmails.has(r.email));
   const blocked_count = allRows.length - rows.length;
 
-  // 1. Is this event already in the DB? (So the UI can show "replacing".)
+  // 1. Is this event already in the DB with real attendance? (So the UI
+  //    can show "replacing previous import" — only when there's something
+  //    to replace, not for orphaned events-row-only stubs from a prior
+  //    crashed import.)
   const { data: existingEvent, error: evErr } = await db
     .from("events")
-    .select("luma_event_id, name, event_date, first_imported_at")
+    .select(
+      "luma_event_id, name, event_date, first_imported_at, registered_count",
+    )
     .eq("luma_event_id", luma_event_id)
     .maybeSingle();
   if (evErr) throw new Error(`event lookup failed: ${evErr.message}`);
-  const wasReplacing = !!existingEvent;
+  const wasReplacing =
+    !!existingEvent &&
+    ((existingEvent as { registered_count?: number | null }).registered_count ??
+      0) > 0;
 
   // 2. Match incoming emails against existing members.
   const emails = Array.from(new Set(rows.map((r) => r.email)));
@@ -197,7 +205,10 @@ export async function importEvent(
 
   // 5. Upsert the event row. Do NOT clobber a human-edited event_date on
   //    re-import (only set on first import or when event_date is null).
-  const eventName = existingEvent?.name ?? eventNameFromFilename(filename);
+  //    Event name uses the latest filename — there's no in-app rename UI,
+  //    so the filename is the only signal we have for what to call the
+  //    event, and a re-upload with a fixed filename should win.
+  const eventName = eventNameFromFilename(filename);
   const eventUpsert: Record<string, unknown> = {
     luma_event_id,
     name: eventName,
