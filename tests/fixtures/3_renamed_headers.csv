@@ -1,0 +1,16 @@
+Full Name,Email Address,joined_at,luma_id,labels,events_approved,check_ins
+Member 1,member1@example.com,2024-01-15T10:00:00Z,usr-0001,member,6,4
+Member 2,member2@example.com,2024-01-15T10:00:00Z,usr-0002,member,7,5
+Member 3,member3@example.com,2024-01-15T10:00:00Z,usr-0003,member,8,6
+Member 4,member4@example.com,2024-01-15T10:00:00Z,usr-0004,member,9,7
+Member 5,member5@example.com,2024-01-15T10:00:00Z,usr-0005,member,10,8
+Member 6,member6@example.com,2024-01-15T10:00:00Z,usr-0006,member,11,9
+Member 7,member7@example.com,2024-01-15T10:00:00Z,usr-0007,member,12,3
+Member 8,member8@example.com,2024-01-15T10:00:00Z,usr-0008,member,15,4
+Member 9,member9@example.com,2024-01-15T10:00:00Z,usr-0009,member,16,5
+Member 10,member10@example.com,2024-01-15T10:00:00Z,usr-0010,member,7,6
+Member 11,member11@example.com,2024-01-15T10:00:00Z,usr-0011,member,8,7
+Member 12,member12@example.com,2024-01-15T10:00:00Z,usr-0012,member,9,8
+Member 13,member13@example.com,2024-01-15T10:00:00Z,usr-0013,member,10,9
+Member 14,member14@example.com,2024-01-15T10:00:00Z,usr-0014,member,11,3
+Member 15,member15@example.com,2024-01-15T10:00:00Z,usr-0015,member,12,4

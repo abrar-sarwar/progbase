@@ -1,0 +1,11 @@
+user_api_id,name,first_name,last_name,first_seen,tags,event_approved_count,event_checked_in_count
+usr-0001,Member 1,First1,Last1,2024-01-15T10:00:00Z,member,6,4
+usr-0002,Member 2,First2,Last2,2024-01-15T10:00:00Z,member,7,5
+usr-0003,Member 3,First3,Last3,2024-01-15T10:00:00Z,member,8,6
+usr-0004,Member 4,First4,Last4,2024-01-15T10:00:00Z,member,9,7
+usr-0005,Member 5,First5,Last5,2024-01-15T10:00:00Z,member,10,8
+usr-0006,Member 6,First6,Last6,2024-01-15T10:00:00Z,member,11,9
+usr-0007,Member 7,First7,Last7,2024-01-15T10:00:00Z,member,12,3
+usr-0008,Member 8,First8,Last8,2024-01-15T10:00:00Z,member,13,4
+usr-0009,Member 9,First9,Last9,2024-01-15T10:00:00Z,member,14,5
+usr-0010,Member 10,First10,Last10,2024-01-15T10:00:00Z,member,5,6

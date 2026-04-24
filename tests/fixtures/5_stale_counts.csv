@@ -1,0 +1,11 @@
+user_api_id,name,first_name,last_name,email,first_seen,tags,event_approved_count,event_checked_in_count
+usr-0001,Member 1,First1,Last1,member1@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0002,Member 2,First2,Last2,member2@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0003,Member 3,First3,Last3,member3@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0004,Member 4,First4,Last4,member4@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0005,Member 5,First5,Last5,member5@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0006,Member 6,First6,Last6,member6@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0007,Member 7,First7,Last7,member7@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0008,Member 8,First8,Last8,member8@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0009,Member 9,First9,Last9,member9@example.com,2024-01-15T10:00:00Z,member,0,0
+usr-0010,Member 10,First10,Last10,member10@example.com,2024-01-15T10:00:00Z,member,0,0
